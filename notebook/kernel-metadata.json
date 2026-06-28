@@ -1,6 +1,6 @@
 {
-  "id": "KAGGLE_USERNAME/explainable-sports-cnn",
-  "title": "Explainable Sports Category Classification (CNN + Grad-CAM + SHAP)",
+  "id": "ardatezel/explainable-sports-cnn",
+  "title": "Explainable Sports CNN",
   "code_file": "sports_cnn_explainable.ipynb",
   "language": "python",
   "kernel_type": "notebook",
