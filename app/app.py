@@ -11,7 +11,7 @@ import json
 import os
 
 import gradio as gr
-import matplotlib.cm as cm
+from matplotlib import colormaps
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -71,7 +71,7 @@ def predict(image):
     labels = {class_names[i]: float(probs[i]) for i in top}
 
     heat = _gradcam(batch, int(top[0]))
-    jet = cm.get_cmap("jet")(heat)[..., :3]
+    jet = colormaps["jet"](heat)[..., :3]
     overlay = np.clip(0.55 * (img / 255.0) + 0.45 * jet, 0, 1)
     return labels, (overlay * 255).astype("uint8")
 

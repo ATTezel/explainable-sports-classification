@@ -49,15 +49,16 @@ On predictive performance alone, \bestModel{} is identified as the strongest mod
 \centering
 \caption{Overall test-set performance and computational cost of the three models on the $500$-image held-out test partition. Accuracy, macro-$F_1$, top-$3$, and top-$5$ are percentages; inference latency is per-image. Values in red are placeholders pending execution of the notebook.}
 \label{tab:results}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccccc}
 \toprule
 Model & Accuracy (\%) & Macro-$F_1$ (\%) & Top-3 (\%) & Top-5 (\%) & Params (M) & Size (MB) & Inference (ms) \\
 \midrule
-Custom CNN          & \res{81.3} & \res{79.6} & \res{92.8} & \res{96.0} & \res{4.0}  & \res{47.8} & \res{31.5} \\
-EfficientNetV2-B0   & \res{91.0} & \res{89.5} & \res{97.6} & \res{99.0} & \res{7.1}  & \res{50.1} & \res{20.4} \\
-ConvNeXt-Tiny       & \res{89.1} & \res{88.0} & \res{96.5} & \res{98.4} & \res{28.6} & \res{57.0} & \res{23.2} \\
+Custom CNN          & \res{81.3} & \res{79.6} & \res{92.8} & \res{96.0} & \res{4.0}  & \res{16.0}  & \res{31.5} \\
+EfficientNetV2-B0   & \res{91.0} & \res{89.5} & \res{97.6} & \res{99.0} & \res{7.1}  & \res{28.4}  & \res{20.4} \\
+ConvNeXt-Tiny       & \res{89.1} & \res{88.0} & \res{96.5} & \res{98.4} & \res{28.6} & \res{114.4} & \res{23.2} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Class-Level Performance}
@@ -116,8 +117,8 @@ Reporting robustness in this structured way ensures that, once the notebook is e
 
 The computational-cost columns of Table~\ref{tab:results} quantify the accuracy--efficiency trade-off that underlies RQ4, reporting parameter count, on-disk model size, and per-image inference latency for each model.
 \bestModel{} combined the highest accuracy with the lowest inference latency of \res{20.4}~ms per image and a moderate parameter count of \res{7.1}~M, giving it the most favourable accuracy-per-millisecond and accuracy-per-parameter position among the three models.
-ConvNeXt-Tiny, despite comparable accuracy, carried substantially more parameters at \res{28.6}~M and the largest on-disk footprint of \res{57.0}~MB, with a slightly higher latency of \res{23.2}~ms, making it the most resource-intensive option.
-The custom CNN had the fewest parameters at \res{4.0}~M but, counter-intuitively, the highest inference latency of \res{31.5}~ms and a mid-range size of \res{47.8}~MB, while also delivering the lowest accuracy, so it did not occupy the efficiency frontier despite its compact parameterisation.
+ConvNeXt-Tiny, despite comparable accuracy, carried substantially more parameters at \res{28.6}~M and the largest on-disk footprint of \res{114.4}~MB, with a slightly higher latency of \res{23.2}~ms, making it the most resource-intensive option.
+The custom CNN had the fewest parameters at \res{4.0}~M and the smallest on-disk size of \res{16.0}~MB but, counter-intuitively, the highest inference latency of \res{31.5}~ms, while also delivering the lowest accuracy, so it did not occupy the efficiency frontier despite its compact parameterisation.
 On the combined criteria of accuracy, latency, and size, \bestModel{} therefore offered the best overall trade-off and was selected as the model to deploy, consistent with the goal of an efficient and accurate sports classifier \citep{isong2025lightweight}.
 The selected model was wrapped in an interactive Gradio web prototype that accepts an uploaded image, returns the top-$k$ predicted sports with their confidence scores, and displays the corresponding Grad-CAM overlay alongside the prediction, directly demonstrating the deployable, explainable system targeted by RQ5.
 The prototype reuses the exact trained graph, including its embedded preprocessing, so the predictions served interactively are identical to those measured in Table~\ref{tab:results}, and the per-image latency observed in the interface is consistent with the reported inference figures.

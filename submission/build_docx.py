@@ -119,7 +119,7 @@ items = [
      "Editable project report on Overleaf in the provided template, shared with edit access. This is the graded artifact.",
      OVERLEAF, "Create & paste"),
     ("5. Frontend website",
-     "Live, interactive web demo (Hugging Face Spaces / Vercel): upload an image and get the top-5 sports, confidence, and a Grad-CAM heatmap.",
+     "Live, interactive web demo on Hugging Face Spaces (Gradio): upload an image and get the top-5 sports, confidence, and a Grad-CAM heatmap.",
      WEBAPP, "Deploy & paste"),
     ("6. Presentation video",
      "Recorded walkthrough (max 10 min): ~2 min live demo of the web interface + ~8 min slides.",

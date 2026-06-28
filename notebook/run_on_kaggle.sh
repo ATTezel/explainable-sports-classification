@@ -34,10 +34,15 @@ echo ">> Pushing kernel to Kaggle..."
 kaggle kernels push -p .
 
 echo ">> Waiting for the run to finish (GPU; this can take 30-90 min)..."
+TRIES=0; MAX_TRIES=180   # hard cap: 180 x 60s = 3 hours, so a stuck kernel never hangs forever
 while true; do
   sleep 60
+  TRIES=$((TRIES + 1))
+  if [ "$TRIES" -ge "$MAX_TRIES" ]; then
+    echo ">> Timed out after $MAX_TRIES minutes. Check the kernel on kaggle.com." >&2; exit 3
+  fi
   STATUS=$(kaggle kernels status "$SLUG" 2>/dev/null | tr -d '"' || true)
-  echo "   status: $STATUS"
+  echo "   [$TRIES/$MAX_TRIES] status: $STATUS"
   case "$STATUS" in
     *complete*) echo ">> Run complete."; break ;;
     *error*|*cancel*) echo ">> Run failed: $STATUS" >&2; exit 2 ;;
@@ -50,5 +55,8 @@ kaggle kernels output "$SLUG" -p kaggle_output
 echo ">> Done. Files:"
 ls -la kaggle_output
 echo
-echo "Next: unzip kaggle_output/results.zip into report/figures/ and update the report numbers from results.json,"
-echo "then move best_model.keras + class_names.json into app/ for the Hugging Face Space."
+echo "Next steps:"
+echo "  1. Figures -> report:  (from repo root)  cd report && unzip -o ../notebook/kaggle_output/results.zip"
+echo "     (the zip already contains a figures/ folder, so PNGs land at report/figures/*.png)."
+echo "  2. Update the report numbers from kaggle_output/results.json (replace the red \\res{} placeholders)."
+echo "  3. Copy best_model.keras + class_names.json into app/ for the Hugging Face Space."

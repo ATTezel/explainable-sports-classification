@@ -48,7 +48,8 @@ ML-Project-Sports-CNN/
 2. **Add Input** → search *"100 Sports Image Classification"* (gpiosenka) → add it.
 3. Settings → **Accelerator: GPU** (T4/P100), Internet **On** (for ImageNet weights).
 4. **Run All**. Runtime ≈ 30–60 min.
-5. From the **Output** panel download `results.zip` (figures + `results.json`) and `models/best_model.keras`.
+5. From the **Output** panel download `results.zip` (all figures + `results.json`) and `models/best_model.keras`.
+6. Drop the figures into the report: from the repo root run `cd report && unzip -o /path/to/results.zip`. The archive already contains a `figures/` folder, so the PNGs land at `report/figures/*.png`. (Do **not** unzip *inside* `report/figures/`, or they nest as `figures/figures/` and the report shows placeholders.)
 
 ## Run the web app (Phase 2 front-end)
 ```bash
@@ -70,6 +71,7 @@ Python · TensorFlow/Keras · scikit-learn · SHAP · Matplotlib · Gradio · Ka
 | ConvNeXt-Tiny | transfer learning | ImageNet |
 
 ## Project links
+- **GitHub repo:** https://github.com/ATTezel/explainable-sports-classification
 - **Kaggle notebook:** _add after running_
 - **Overleaf report:** _add share link_
 - **Live web app (HF Space):** _add after deploy_
@@ -77,19 +79,11 @@ Python · TensorFlow/Keras · scikit-learn · SHAP · Matplotlib · Gradio · Ka
 
 ---
 
-## Push this to GitHub (public)
+## Repository
+This project is public at **https://github.com/ATTezel/explainable-sports-classification**.
+Clone it with:
 ```bash
-cd "ML-Project-Sports-CNN"
-git init -b main
-git add .
-git commit -m "Explainable Sports Category Classification — CNN transfer learning + Grad-CAM/SHAP"
-# create an empty public repo on github.com first, then:
-git remote add origin https://github.com/<your-username>/sports-cnn-explainable.git
-git push -u origin main
-```
-Or with the GitHub CLI:
-```bash
-gh repo create sports-cnn-explainable --public --source=. --remote=origin --push
+git clone https://github.com/ATTezel/explainable-sports-classification.git
 ```
 
 > **Note on results:** the report's numeric tables/figures are placeholders (shown in red) until the

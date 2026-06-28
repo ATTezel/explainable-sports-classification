@@ -1,4 +1,4 @@
-# Presentation slides — outline (12 slides, ~6 min video)
+# Presentation slides — outline (12 slides, ~8 min) — plus a ~2 min live demo first = ~10 min video
 
 Build these in PowerPoint/Google Slides. Each slide lists its title and the key visuals/bullets.
 Pull every figure from `results.zip` (the Kaggle run). Keep it clean: white background, one idea per slide.
@@ -34,7 +34,7 @@ Pull every figure from `results.zip` (the Kaggle run). Keep it clean: white back
 - Show `training_curves.png` (accuracy/loss, train vs val) — convergence, early stopping, overfitting check.
 
 **8 — Results: model comparison**
-- Show `model_comparison.png` + the main results table (acc, macro-F1, top-3, params, size, inference).
+- Show the main results table (acc, macro-F1, top-3, params, size, inference); `model_comparison.png` optional.
 - State the best model (RQ1) and the transfer-vs-custom gap (RQ2).
 
 **9 — Class-level analysis**

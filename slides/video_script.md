@@ -1,9 +1,27 @@
-# Presentation video — spoken script (~6 minutes)
+# Presentation video — spoken script (~10 minutes = ~2 min live demo + ~8 min slides)
 
-Read naturally; one block per slide. Replace [bracketed] numbers with your real results after the
-Kaggle run. Target 5–7 minutes.
+Read naturally. Start with the **live demo** of the deployed web app, then go through the slides
+(one block per slide). Replace [bracketed] numbers with your real results after the Kaggle run.
+Target: under 10 minutes total (the professor's cap).
 
 ---
+
+## Part 1 — Live demo of the web interface (~2 min)
+
+[Open the deployed Hugging Face Space in the browser beforehand so it is already loaded.]
+"Before the slides, here is the working system. This is my Explainable Sports Classifier, running
+live on Hugging Face Spaces. I'll upload a sports image — [drag in a test image, e.g. a Formula 1
+photo]. Within about a second it returns the top-5 predicted sports with confidence scores — here the
+top prediction is [formula 1 racing] at [9X]% confidence. On the right is the Grad-CAM heatmap: the
+warm region sits on [the car and the track], which shows the model is looking at sport-relevant
+content, not the background. Let me try a harder example — [upload a second image] — and you can see
+the top-5 and the heatmap update. This is the same model and the same preprocessing I evaluate in the
+report, so what you see live is exactly what the reported numbers measure. Now to the slides for how
+it was built and what the results show."
+
+---
+
+## Part 2 — Slides (~8 min)
 
 **[Slide 1 — Title]**
 "Hi, I'm Arda Tekin Tezel. This is my Machine Learning and Smart Systems project on *Explainable

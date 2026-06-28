@@ -1,5 +1,9 @@
-gradio>=4.44.0
-tensorflow>=2.15.0
-numpy>=1.26.0
-matplotlib>=3.8.0
+# Pinned to match the Hugging Face Space SDK header (sdk_version: 4.44.0) and the
+# notebook's TensorFlow 2.15 stack. Upper bounds prevent fresh HF builds from pulling
+# incompatible majors (Gradio 5.x renamed allow_flagging; numpy 2.x breaks TF 2.15;
+# matplotlib 3.9 removed cm.get_cmap).
+gradio==4.44.0
+tensorflow==2.15.0
+numpy>=1.26.0,<2.0
+matplotlib>=3.8,<3.10
 pillow>=10.0.0

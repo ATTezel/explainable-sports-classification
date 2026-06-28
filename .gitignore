@@ -8,6 +8,13 @@ __pycache__/
 *.h5
 *.weights.h5
 
+# Kaggle API credentials — never commit a token
+kaggle.json
+.kaggle/
+
+# Kaggle run outputs pulled locally by run_on_kaggle.sh
+notebook/kaggle_output/
+
 # LaTeX build artifacts
 *.aux
 *.bbl

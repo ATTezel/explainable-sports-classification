@@ -414,9 +414,9 @@ def make_gradcam_heatmap(img_batch, model, last_conv, pred_index=None):
 
 
 def overlay(img_uint8, heat):
-    import matplotlib.cm as cm
+    from matplotlib import colormaps
     heat_r = tf.image.resize(heat[..., None], (IMG_SIZE, IMG_SIZE)).numpy()[..., 0]
-    jet = cm.get_cmap('jet')(heat_r)[..., :3]
+    jet = colormaps['jet'](heat_r)[..., :3]
     return np.clip(0.55 * (img_uint8 / 255.0) + 0.45 * jet, 0, 1)
 """)
 
