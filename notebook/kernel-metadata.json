@@ -1,0 +1,15 @@
+{
+  "id": "KAGGLE_USERNAME/explainable-sports-cnn",
+  "title": "Explainable Sports Category Classification (CNN + Grad-CAM + SHAP)",
+  "code_file": "sports_cnn_explainable.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "dataset_sources": ["gpiosenka/sports-classification"],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

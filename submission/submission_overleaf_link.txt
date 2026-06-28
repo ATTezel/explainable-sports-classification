@@ -1,0 +1,14 @@
+PHASE III SUBMISSION — Editable Overleaf Link
+Machine Learning & Smart Systems · Topic 12.4
+Explainable Sports Category Classification
+Student: Arda Tekin Tezel
+
+Editable Overleaf report link (Share > Anyone with this link can EDIT):
+[PASTE your EDITABLE Overleaf link here — Share > Anyone can edit]
+
+Supporting links:
+  GitHub repository : https://github.com/ATTezel/explainable-sports-classification
+  Dataset           : https://www.kaggle.com/datasets/gpiosenka/sports-classification
+  Kaggle notebook   : [PASTE your Kaggle notebook link after you upload & Run All]
+  Live web demo     : [PASTE your Hugging Face Spaces link after you deploy app/]
+  Presentation video: [PASTE your YouTube/loom presentation link after you record it]

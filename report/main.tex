@@ -38,7 +38,7 @@
   \IfFileExists{#1}{\includegraphics[width=#2\linewidth]{#1}}{%
     \setlength{\fboxsep}{10pt}%
     \fbox{\parbox[c][0.30\textheight][c]{#2\linewidth}{\centering
-      \ttfamily\small #1\\[6pt]\normalfont\itshape
+      {\ttfamily\small\detokenize{#1}}\\[6pt]\itshape
       Placeholder --- replace with this figure from \texttt{results.zip}.}}}
   \caption{#3}\label{#4}\end{figure}}
 
