@@ -172,7 +172,7 @@ set_run(r, 9.5, RGBColor(0xB0, 0x2A, 0x37), italic=True)
 for lead, tail in [
     ("Custom CNN — ", "~81.3% accuracy, 0.796 macro-F1 (lightweight from-scratch baseline)."),
     ("EfficientNetV2-B0 — ", "~91.0% accuracy, 0.895 macro-F1; best accuracy/size/speed balance; chosen for deployment."),
-    ("ConvNeXt-Tiny — ", "~89.1% accuracy, but largest and slowest."),
+    ("ConvNeXt-Tiny — ", "~89.1% accuracy, but the largest and most resource-intensive model."),
 ]:
     pp = doc.add_paragraph(style="List Bullet")
     r = pp.add_run(lead); set_run(r, 10.5, bold=True)
