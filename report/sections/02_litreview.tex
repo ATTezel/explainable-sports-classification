@@ -1,0 +1,149 @@
+\section{Literature Review}
+\label{sec:litreview}
+
+The literature relevant to this study spans several interconnected themes that, taken together, motivate the design of an explainable transfer-learning pipeline for fine-grained sports image classification.
+The first theme concerns the evolution of image-based machine learning in the sports domain, where the field has migrated from handcrafted descriptors and classical classifiers toward end-to-end convolutional neural networks (CNNs).
+The second theme examines CNN architectures applied specifically to sports image classification, comparing the datasets, class granularities, and reported performance that characterise this rapidly growing subfield.
+The third theme reviews the general-purpose backbone families that underpin modern transfer learning, including ResNet, DenseNet, the MobileNet series, EfficientNetV2, and ConvNeXt, and clarifies why compact yet expressive variants are well suited to a 100-class problem with limited per-class data.
+The fourth theme addresses data preprocessing and augmentation, with attention to which transformations preserve semantic validity for sports imagery.
+The fifth theme surveys evaluation methodology, arguing that single-number accuracy is insufficient for fine-grained, many-class tasks.
+The remaining themes cover explainable artificial intelligence (XAI) for image analysis, robustness and deployment considerations, and a comparative synthesis that exposes the gap this study sets out to address.
+By organising the review around these themes rather than around individual papers, we can compare methods directly and identify the recurring strengths and weaknesses that shape the contributions of this work.
+
+\subsection{Image-Based Machine Learning in Sports}
+\label{subsec:imagemlsports}
+
+Early approaches to sports image and action understanding relied on conventional image-processing pipelines in which hand-engineered features were extracted and then passed to classical machine-learning classifiers.
+Such pipelines typically combined colour histograms, edge and texture descriptors, or keypoint detectors with shallow models, and they performed adequately only when scenes were visually constrained and inter-class variation was large.
+The transition to deep learning reframed the problem as end-to-end representation learning, in which convolutional features are optimised jointly with the classifier, and this shift is clearly reflected in recent sports-vision studies.
+\citet{zhou2024tuna}, for example, couple a deep network with a tuna-swarm metaheuristic that tunes the model configuration for sports image classification, illustrating how the community has moved from manual feature design toward automated optimisation of learned representations.
+In a complementary direction, \citet{li2024seres} embed squeeze-and-excitation channel attention into a residual backbone (SE-RES-CNN), demonstrating that selectively reweighting learned feature channels improves discrimination among visually similar sports scenes more effectively than fixed handcrafted features.
+\citet{fu2024federated} extend this trajectory further by combining federated learning with a genetic-algorithm-based architecture search, showing that both the data-access regime and the network topology itself can be optimised rather than hand-specified.
+At the finer-grained end of the spectrum, \citet{bera2023finegrained} target sports, yoga, and dance posture recognition with an attention-driven network (SYD-Net), underscoring that pose and posture cues, not just scene context, are central to distinguishing closely related athletic activities.
+Work on women's sport actions by \citet{ray2025womensports} highlights a parallel concern, namely that deep models must remain effective when labelled data are scarce and demographically narrow, a situation in which transfer learning becomes essential.
+Collectively, these studies trace a consistent arc from constrained, feature-engineered pipelines toward attention-augmented, automatically optimised deep networks, while also exposing persistent difficulties around fine-grained discrimination and data scarcity that remain only partially resolved.
+
+\subsection{CNN-Based Methods for Sports Image Classification}
+\label{subsec:cnnsports}
+
+Within the deep-learning era, CNNs have become the dominant tool for sports image classification, yet the literature is fragmented across heterogeneous datasets, class counts, and evaluation protocols, which complicates direct comparison.
+\citet{liu2024comparison} provide one of the most directly relevant reference points by comparing four CNN architectures on a 100-class sports image task, reporting that deeper, more modern backbones generally outperform shallower ones but at substantial computational cost.
+This comparison is valuable because it operates at the same class granularity as the present study, yet it focuses on raw accuracy and leaves questions of interpretability, robustness, and per-class behaviour largely unexamined.
+\citet{li2024seres} and \citet{zhou2024tuna} both report strong results on sports benchmarks, but they differ markedly in strategy: the former improves the backbone through channel attention, whereas the latter improves the training and configuration process through swarm-based hyperparameter optimisation, illustrating two distinct routes to higher accuracy.
+\citet{fu2024federated} report competitive performance while additionally addressing privacy-preserving, distributed training, a concern that the other sports studies do not engage with, although their genetic architecture search adds considerable search overhead.
+Fine-grained and pose-centric datasets occupy a separate niche: \citet{bera2023finegrained} emphasise that posture-level categories demand attention mechanisms and careful handling of intra-class variation, while \citet{ray2024wsports} introduce the WSports-50 women's-sport action dataset and \citet{ray2025womensports} show that ResNet-50 transfer learning can succeed on such small, specialised collections.
+The Meta-Album SPT derivative described in \citet{metaalbum2022spt} contributes yet another configuration, a 73-class sports collection at 128-pixel resolution, which differs from the 100-class, 224-pixel setting used here and therefore is not directly comparable despite its thematic overlap.
+A recurring strength across these works is that transfer learning and attention reliably lift accuracy on sports imagery, but recurring weaknesses are equally apparent: datasets vary widely in size and class count, reporting is frequently restricted to top-1 accuracy, and explainability is seldom integrated.
+These unresolved issues, namely inconsistent benchmarking, limited reporting of fine-grained behaviour, and the near-absence of interpretability, directly motivate the comparative and explainable design adopted in this study.
+
+\subsection{Transfer Learning Architectures}
+\label{subsec:transferarch}
+
+The backbones available for transfer learning differ substantially in depth, parameter count, and the inductive biases they encode, and these differences strongly influence their suitability for a 100-class problem with limited per-class data.
+ResNet \citep{he2016resnet} introduced residual connections that enabled the stable training of very deep networks and remains a robust default backbone, but its parameter count grows quickly with depth and it lacks the parameter efficiency of more recent designs.
+DenseNet \citep{huang2017densenet} improves feature reuse and gradient flow through dense connectivity, achieving competitive accuracy with fewer parameters than comparably deep ResNets, although its memory footprint during training can be high.
+The MobileNet family targets efficiency explicitly: MobileNetV2 \citep{sandler2018mobilenetv2} uses inverted residuals and linear bottlenecks to reduce computation, and MobileNetV3 \citep{howard2019mobilenetv3} refines this with neural-architecture-search-derived blocks and squeeze-and-excitation modules, making both attractive for resource-constrained deployment but typically less accurate than larger models.
+EfficientNetV2 \citep{tan2021efficientnetv2} advances the efficiency frontier through compound scaling combined with training-aware architecture search and fused convolution blocks, delivering strong accuracy-per-parameter and faster training, which makes its compact B0 variant a natural baseline when data and compute are limited.
+ConvNeXt \citep{liu2022convnext} modernises the pure-convolutional design by importing transformer-inspired choices such as large kernels, layer normalisation, and inverted bottlenecks, achieving accuracy competitive with vision transformers while retaining the data efficiency and locality of CNNs, and its Tiny variant offers this capability at a moderate parameter budget.
+The practical value of these efficient backbones for transfer learning is well demonstrated in adjacent domains: \citet{alotaibi2024gastro} fine-tune EfficientNet for gastrointestinal endoscopy and \citet{manole2024dermatology} adapt EfficientNetB3 for dermatological classification, both reporting that ImageNet-pretrained features transfer effectively to specialised, data-limited image tasks.
+Taken together, this evidence indicates that EfficientNetV2-B0 and ConvNeXt-Tiny are particularly well matched to the present problem, since both provide high representational capacity, strong pretrained features, and favourable accuracy-to-cost ratios that suit a many-class task with only modest training data per category and an eventual lightweight-deployment requirement.
+
+\subsection{Data Preprocessing and Augmentation}
+\label{subsec:preprocaug}
+
+Preprocessing and augmentation are decisive for CNN performance, particularly when the number of training images per class is limited, as is the case for a 100-class sports dataset.
+Standard preprocessing for pretrained backbones involves resizing images to a fixed input resolution (224$\times$224 in this study) and normalising pixel values using the channel statistics of the pretraining corpus, which aligns the input distribution with the expectations of the transferred weights.
+Data augmentation then synthetically enlarges the effective training set and regularises the model against overfitting, but the choice of transformations must respect the semantics of the target domain.
+\citet{foysal2024plantleaf} and \citet{karim2024grapeleaf} both rely on geometric and photometric augmentations to strengthen plant-leaf classifiers under limited data, and their results confirm that carefully chosen transforms improve generalisation without distorting class identity.
+For sports imagery, horizontal flipping is a valid and useful augmentation because a mirrored athlete, court, or field remains a plausible, label-preserving view of the same activity.
+Vertical flipping, by contrast, is generally inappropriate for natural sports scenes, since inverting the vertical axis produces physically implausible images in which gravity, ground planes, and human posture are reversed, potentially teaching the network spurious orientations.
+Photometric perturbations such as moderate brightness, contrast, and colour jitter, together with small rotations, crops, and scale changes, are typically safe and emulate the variation in lighting and viewpoint encountered across real broadcasts and photographs.
+This domain-aware augmentation philosophy, retaining orientation-preserving and illumination-style transforms while excluding semantically invalid ones, directly informs the preprocessing pipeline adopted in this work.
+
+\subsection{Model Evaluation and Reliability}
+\label{subsec:evaluation}
+
+Reliable evaluation of image classifiers requires metrics that capture more than overall correctness, especially for fine-grained tasks with many classes and potential class imbalance.
+Accuracy alone can be misleading because it aggregates over all classes and can mask systematic failures on a subset of visually confusable categories, a risk that grows as the number of classes increases.
+Precision, recall, and the F1 score provide a more nuanced view by separating false-positive from false-negative behaviour, and the macro-averaged F1 score is especially informative for a 100-class problem because it weights every class equally regardless of its frequency.
+Top-$k$ accuracy is similarly valuable in fine-grained settings, since it credits a model for ranking the correct sport among its top predictions even when the single top guess falls to a near-identical class, reflecting realistic usage in retrieval and assistive scenarios.
+The confusion matrix complements these scalar metrics by revealing which specific sports are most frequently interchanged, exposing structured error patterns that a single accuracy figure cannot communicate.
+\citet{bera2023finegrained} illustrate the importance of fine-grained-aware evaluation in posture recognition, where closely related categories make per-class behaviour and ranking quality more meaningful than aggregate accuracy.
+\citet{liu2024comparison}, while offering a useful 100-class comparison, exemplify a common limitation in the sports literature, namely a heavy reliance on top-1 accuracy with limited reporting of macro-F1, top-$k$, or confusion structure, which constrains interpretation of where and why models fail.
+This study therefore adopts a fuller evaluation protocol, combining accuracy with precision, recall, macro-F1, top-$k$ accuracy, and confusion-matrix analysis, in order to characterise reliability rather than report a single headline number.
+
+\subsection{Explainable AI in Image Analysis}
+\label{subsec:xai}
+
+As CNNs are deployed in increasingly consequential settings, the inability to inspect their decision process has motivated a substantial body of work on explainable artificial intelligence for image analysis.
+Broadly, image-level explanation methods aim to attribute a model's prediction to spatial regions or input features, allowing practitioners to verify whether a network attends to semantically meaningful evidence rather than incidental cues.
+\citet{nguyen2025xaicv} survey this landscape and note that gradient-based attribution, class-activation mapping, and perturbation-based attribution have become the dominant paradigms in computer vision, each offering a different trade-off between fidelity, resolution, and computational cost.
+The two families most relevant to this study are class-activation mapping, exemplified by Grad-CAM, and game-theoretic feature attribution, exemplified by SHAP, which provide complementary spatial and contribution-based perspectives on a model's behaviour.
+
+\subsubsection{Grad-CAM}
+\label{subsubsec:gradcam}
+
+Grad-CAM \citep{selvaraju2017gradcam} produces class-discriminative localisation maps by weighting the activations of a convolutional layer with the gradients of the target class flowing into that layer, yielding a heatmap that highlights the image regions most responsible for the prediction.
+Its principal advantages are that it is architecture-agnostic for CNNs, requires no modification or retraining of the model, and is computationally inexpensive, which explains its widespread adoption across application domains.
+Successor methods refine this idea: Grad-CAM++ \citep{chattopadhay2018gradcampp} improves localisation when multiple instances of an object are present, while Score-CAM \citep{wang2020scorecam} removes the dependence on gradients altogether by weighting activation maps according to their forward-pass contribution to the class score, often producing cleaner and more stable maps.
+In applied work, \citet{kumaran2024lungcam} use Grad-CAM to interpret an ensemble of VGG16, ResNet50, and InceptionV3 for lung-cancer imaging, \citet{ahmed2024clothing} combine multi-backbone transfer learning with Grad-CAM for clothing classification, and \citet{karim2024grapeleaf} pair a lightweight MobileNetV3 edge model with Grad-CAM for grape-leaf diagnosis, collectively demonstrating that the method generalises across architectures and tasks.
+A recognised limitation, however, is that Grad-CAM maps are produced at the spatial resolution of a deep convolutional layer and are then upsampled, so they are inherently coarse and can blur fine boundaries, which is a particular concern for fine-grained discrimination.
+This coarseness means that Grad-CAM is best treated as an indicator of approximate spatial attention rather than as a precise, pixel-accurate account of the evidence, motivating its combination with a complementary attribution method.
+
+\subsubsection{SHAP}
+\label{subsubsec:shap}
+
+SHAP \citep{lundberg2017shap} grounds explanation in cooperative game theory, assigning each feature a Shapley value that quantifies its marginal contribution to a prediction averaged over feature coalitions, which yields a principled measure of positive and negative support.
+For images, features are typically defined over regions or superpixels, and SHAP estimates how masking or revealing each region changes the predicted class probability, so the resulting attributions can indicate not only which areas support a class but also which areas argue against it.
+This signed, contribution-based view complements the unsigned spatial emphasis of Grad-CAM, since it can reveal suppressive evidence and quantify relative importance rather than merely localising attention.
+\citet{nazim2025malware} combine SHAP with LIME and Grad-CAM to interpret malware-image classifiers, illustrating how multiple attribution methods can be triangulated for a more trustworthy explanation.
+\citet{tempel2024shapgradcam} directly compare SHAP and Grad-CAM in human-activity recognition and report that the two methods can disagree, with each surfacing aspects of the model's reasoning that the other misses, which reinforces the value of using them jointly.
+The principal drawback of SHAP is computational: faithfully approximating Shapley values requires many model evaluations across masked feature coalitions, making image-level SHAP considerably more expensive than a single Grad-CAM pass and dependent on the chosen masking or superpixel scheme.
+In this study, SHAP is therefore applied selectively to complement Grad-CAM, providing a region-level account of positive and negative evidence where the additional computational cost is justified.
+
+\subsubsection{Explainability Limitations}
+\label{subsubsec:xailimits}
+
+Although attribution maps are visually compelling, a critical reading of the literature warns that an attractive heatmap is not, by itself, evidence that a model reasons correctly.
+\citet{geirhos2020shortcut} document how deep networks frequently exploit shortcut features, latching onto incidental correlations that happen to predict the label on the training distribution but fail to generalise, and \citet{ye2024cleverhans} survey the broad prevalence of such spurious correlations across tasks and datasets.
+\citet{suhail2025shortcut} show that vision classifiers remain susceptible to this shortcut behaviour, which is especially relevant for sports imagery where backgrounds such as courts, fields, water, or arenas may correlate strongly with the sport and tempt the model to rely on context rather than the athlete or action itself.
+\citet{bassi2024lrp} demonstrate, using layer-wise relevance propagation, that explicitly optimising attributions can reduce background bias and steer a network toward foreground evidence, indicating that explanation methods can be diagnostic of, and even corrective for, contextual over-reliance.
+A further concern is stability: \citet{kares2025saliency} evaluate saliency maps and find that they can be sensitive to small perturbations and methodological choices, so a single explanation should not be over-interpreted as a definitive account of model behaviour.
+\citet{ennab2025pixel} argue for finer, pixel-level interpretability over coarse class-activation maps in high-stakes medical imaging, highlighting that the resolution and faithfulness of an explanation materially affect its trustworthiness.
+The consensus emerging from these works is that explanations require careful, domain-informed interpretation, ideally triangulated across complementary methods and corroborated against quantitative robustness evidence, rather than accepted at face value.
+This study adopts that cautious stance by pairing Grad-CAM with SHAP and by examining whether highlighted regions correspond to genuine sport-relevant content rather than background shortcuts.
+
+\subsection{Robustness, Generalization, and Deployment}
+\label{subsec:robustdeploy}
+
+Beyond clean-data accuracy, a practically useful classifier must remain reliable under the noise, blur, and occlusion that characterise real images, and it must run within realistic resource budgets.
+\citet{siedel2023corruption} study robustness under random $L_p$-norm corruptions and show that standard classifiers can degrade markedly when inputs are perturbed, underscoring that high test accuracy on curated data does not guarantee resilience in deployment.
+\citet{ramirezagudelo2026noisy} report a complementary finding, that deliberately exposing CNNs to noisy data during training can improve robustness, suggesting that controlled augmentation with realistic corruptions is a viable mitigation strategy rather than a purely harmful nuisance.
+Together these results imply that robustness should be evaluated explicitly and, where possible, cultivated through training, rather than assumed from clean-set performance alone.
+Deployment imposes a second, orthogonal set of constraints centred on model size, memory, and inference latency, which determine whether a model can run on edge, mobile, or web platforms.
+\citet{isong2025lightweight} survey strategies for building efficient lightweight CNNs, and \citet{karim2024grapeleaf} demonstrate a concrete edge deployment in which a compact MobileNetV3 model paired with Grad-CAM runs on constrained hardware, showing that interpretability and efficiency are compatible goals.
+\citet{foysal2024plantleaf} similarly couple a CNN classifier with a mobile application, illustrating an end-to-end path from model training to an interactive, user-facing tool of the kind this study targets through a Gradio interface.
+These deployment-oriented studies reinforce the rationale for selecting compact backbones such as EfficientNetV2-B0 and ConvNeXt-Tiny, since their favourable accuracy-to-cost profiles make an interpretable, web-deployable sports classifier realistic without sacrificing predictive quality.
+
+\subsection{Comparative Literature Review Matrix}
+\label{subsec:litmatrix}
+
+To make the foregoing comparisons explicit, Table~\ref{tab:litmatrix} consolidates the most relevant prior studies along the dimensions that matter most for this work, namely the task domain, the architectures and datasets used, the class granularity, the evaluation metrics reported, whether explainability is incorporated, and whether robustness or deployment is considered.
+Reading the matrix across rows rather than down columns clarifies how individual studies cluster, and it exposes the systematic gaps that motivate the present design.
+The table juxtaposes sports-specific classification work, general-purpose backbone proposals, applied transfer-learning studies in adjacent domains, and the explainability and robustness literature, so that the contributions and omissions of each can be compared on a common footing.
+
+A first recurring pattern in Table~\ref{tab:litmatrix} is that the sports-classification studies consistently confirm the effectiveness of deep transfer learning and attention, yet they predominantly report top-1 accuracy and rarely include macro-F1, top-$k$ accuracy, or confusion-matrix analysis, which limits insight into fine-grained failure modes.
+A second pattern is that explainability and sports image classification are seldom paired: the XAI methods \citep{selvaraju2017gradcam,chattopadhay2018gradcampp,wang2020scorecam,lundberg2017shap} and their applications cluster in medical, security, and agricultural domains \citep{kumaran2024lungcam,nazim2025malware,karim2024grapeleaf,ahmed2024clothing}, while the sports studies \citep{liu2024comparison,li2024seres,zhou2024tuna,fu2024federated,bera2023finegrained} largely omit attribution analysis.
+A third pattern is that robustness evaluation, external validation, and efficiency or deployment analysis are scarce within the sports literature, with corruption-robustness and lightweight-deployment evidence \citep{siedel2023corruption,ramirezagudelo2026noisy,isong2025lightweight,foysal2024plantleaf} originating almost entirely outside it.
+The proposed study addresses these recurring weaknesses directly: it compares a custom CNN against two complementary pretrained backbones on the same 100-class benchmark, reports a comprehensive metric suite that includes macro-F1 and top-$k$ accuracy alongside confusion-matrix analysis, integrates both Grad-CAM and SHAP to interrogate model reasoning, and explicitly considers robustness and lightweight web deployment.
+In doing so, it occupies a position in the matrix that, to the best of our reading, no single prior sports study fully covers, combining comparative architecture evaluation, rigorous metrics, dual-method explainability, and deployment awareness within one coherent pipeline.
+
+\subsection{Synthesis of Literature and Identified Gap}
+\label{subsec:synthesis}
+
+Synthesising across the themes above, the field demonstrably does several things well: deep CNNs with transfer learning and attention reliably achieve strong accuracy on sports imagery \citep{liu2024comparison,li2024seres,zhou2024tuna}, modern efficient backbones such as EfficientNetV2 and ConvNeXt deliver high accuracy at a manageable parameter cost \citep{tan2021efficientnetv2,liu2022convnext}, and mature attribution methods exist to probe model decisions \citep{selvaraju2017gradcam,lundberg2017shap}.
+The applied transfer-learning literature in adjacent domains further confirms that ImageNet-pretrained features adapt effectively to specialised, data-limited tasks \citep{alotaibi2024gastro,manole2024dermatology}, and the robustness and deployment literature shows that compact, interpretable models can be made resilient and practically deployable \citep{siedel2023corruption,karim2024grapeleaf}.
+What remains missing is the integration of these strengths within a single fine-grained sports study: existing sports work seldom couples a controlled, multi-architecture comparison with a comprehensive metric suite, rarely subjects its predictions to complementary explainability analysis, and only infrequently reports robustness or deployment characteristics.
+The result is a body of literature that is individually mature along each axis but collectively fragmented, leaving practitioners without a worked example that simultaneously satisfies the demands of accuracy, interpretability, reliability, and usability for many-class sports recognition.
+This study is positioned precisely at that intersection, contributing a comparative, metric-rich, dually explainable, and deployment-aware treatment of 100-class sports classification that consolidates the scattered best practices identified above.
+Having established this gap and the design principles that follow from it, the next section details the methodology through which these principles are realised.

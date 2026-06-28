@@ -1,0 +1,190 @@
+% =====================================================================
+%  Explainable Sports Category Classification Using CNN Transfer Learning
+%  Machine Learning & Smart Systems project (Topic 12.4) — Arda Tekin Tezel
+%
+%  HOW TO USE:
+%   1. On Overleaf, create a copy of the provided Elsevier template project.
+%   2. Upload this main.tex + references.bib, and the sections/ folder.
+%   3. Upload the figures from results.zip into a figures/ folder
+%      (class_distribution.png, sample_grid.png, training_curves.png,
+%       model_comparison.png, confusion_matrix.png, gradcam.png, shap.png)
+%      and make a workflow.png in PowerPoint. The report COMPILES even
+%      before the images exist (placeholders are shown).
+%   4. Replace every RED \res{...} number and \bestModel with the real
+%      values from the Kaggle run's results.json.
+% =====================================================================
+\documentclass[review]{elsarticle}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+% --- placeholder for results not yet filled from the Kaggle run (shown red) ---
+\newcommand{\res}[1]{{\color{red}\textbf{#1}}}
+% --- the best model name (swap if a different model wins after the run) ---
+\newcommand{\bestModel}{EfficientNetV2-B0}
+% --- comparative-matrix marks ---
+\newcommand{\cmark}{\ensuremath{\checkmark}}
+\newcommand{\xmark}{\ensuremath{\times}}
+\newcommand{\pmark}{\ensuremath{\sim}}
+% --- figure that degrades to a labelled box if the image file is absent ---
+\newcommand{\projfig}[4]{% #1=file  #2=width(0-1)  #3=caption  #4=label
+  \begin{figure}[htbp]\centering
+  \IfFileExists{#1}{\includegraphics[width=#2\linewidth]{#1}}{%
+    \setlength{\fboxsep}{10pt}%
+    \fbox{\parbox[c][0.30\textheight][c]{#2\linewidth}{\centering
+      \ttfamily\small #1\\[6pt]\normalfont\itshape
+      Placeholder --- replace with this figure from \texttt{results.zip}.}}}
+  \caption{#3}\label{#4}\end{figure}}
+
+\journal{Machine Learning \& Smart Systems Project}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Explainable Sports Category Classification Using CNN Transfer Learning:
+A Comparative Study of a Custom CNN, EfficientNetV2-B0, and ConvNeXt-Tiny
+with Grad-CAM and SHAP}
+
+\author{Arda Tekin Tezel}
+\address{University of Europe for Applied Sciences, Potsdam, Germany}
+
+\begin{abstract}
+Automatic recognition of the sport depicted in an image is increasingly important for media
+indexing, archive retrieval, and broadcast analytics, where manual tagging does not scale.
+Most reported sports-image classifiers emphasise accuracy on a single architecture and rarely
+pair a custom baseline with modern pretrained backbones or interpret their decisions.
+This study addresses the problem of automatically classifying still images into one of one hundred
+sports categories using a comparative and explainable convolutional-neural-network framework, and it
+investigates whether transfer learning improves predictive performance over a custom CNN while
+remaining computationally efficient and visually interpretable.
+A custom CNN baseline is compared with two ImageNet-pretrained backbones, EfficientNetV2-B0 and
+ConvNeXt-Tiny, on the public 100 Sports Image Classification dataset of 13{,}493 training, 500
+validation, and 500 test images, using a two-stage transfer-learning protocol and a unified
+evaluation pipeline.
+Models are assessed with accuracy, top-3 and top-5 accuracy, macro-averaged precision, recall and
+F1, a 100$\times$100 confusion matrix, parameter count, model size, and inference time, and the best
+model is interpreted with Grad-CAM and SHAP.
+The best-performing model, \bestModel, reached a test accuracy of \res{91.0}\% and a macro-F1 of
+\res{89.5}\%, compared with \res{81.3}\% accuracy for the custom baseline, confirming a clear
+transfer-learning advantage.
+Grad-CAM and SHAP concentrated on sport-relevant regions such as athletes, equipment, and the
+playing area rather than background context for the majority of correct predictions.
+The resulting model is light enough (\res{50.1}~MB, \res{20.4}~ms per image) to run as an explainable
+web prototype, supporting practical, trustworthy sports-image tagging.
+The contribution is a reproducible, explainable, and deployment-aware comparison of custom and
+pretrained CNNs for fine-grained 100-class sports image classification.
+\end{abstract}
+
+\begin{keyword}
+Convolutional neural networks \sep Transfer learning \sep Sports image classification \sep
+EfficientNetV2 \sep ConvNeXt \sep Explainable AI \sep Grad-CAM \sep SHAP
+\end{keyword}
+
+\end{frontmatter}
+
+% ----------------------------------------------------------------- Highlights
+\section*{Highlights}
+\begin{itemize}
+\item A custom CNN is compared with EfficientNetV2-B0 and ConvNeXt-Tiny for 100-class sports image classification.
+\item A two-stage transfer-learning protocol is evaluated with accuracy, top-$k$, macro-F1, efficiency, and a confusion matrix.
+\item Grad-CAM and SHAP jointly assess whether predictions rely on sport-relevant regions rather than background shortcuts.
+\item Accuracy, model size, and inference time are reported together to identify the best deployment trade-off.
+\item The best model is released as an explainable, browser-based Gradio prototype with a public code repository.
+\end{itemize}
+
+% =============================================================== BODY
+\input{sections/01_intro}
+
+\input{sections/02_litreview}
+
+% ----------- Comparative literature review matrix (Table 1) -----------
+\begin{sidewaystable}
+\centering
+\caption{Comparative literature review matrix summarising datasets, models, evaluation practices,
+explainability, robustness, validation, and efficiency analysis across closely related
+CNN image-classification studies, contrasted with the proposed study (final row). Column
+abbreviations: TL~=~transfer learning, CB~=~class balancing, MC~=~multi-model comparison,
+GC~=~Grad-CAM, SH~=~SHAP, RT~=~robustness testing, EV~=~external validation, ST~=~statistical
+testing, EA~=~efficiency analysis. Marks: \cmark{}~included, \xmark{}~not included, \pmark{}~partial/unclear.}
+\label{tab:litmatrix}
+\tiny
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{1.5cm}p{1.6cm}p{1.4cm}cp{1.8cm}ccccccccc p{1.5cm}p{2.1cm}@{}}
+\toprule
+\textbf{Study} & \textbf{Problem} & \textbf{Dataset} & \textbf{Cls} & \textbf{Models} &
+\textbf{TL} & \textbf{CB} & \textbf{MC} & \textbf{GC} & \textbf{SH} & \textbf{RT} & \textbf{EV} &
+\textbf{ST} & \textbf{EA} & \textbf{Metrics} & \textbf{Key limitation} \\
+\midrule
+Zhou et al.\ \citep{zhou2024tuna} & Sports image classification & Sports image set & $\sim$18 & Deep net + tuna-swarm opt. & \pmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \pmark & \pmark & Accuracy & No explainability; opt.-focused \\
+Li et al.\ \citep{li2024seres} & Sports image classification & Sports image set & multi & SE-RES-CNN & \pmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \pmark & \pmark & Acc, Prec, Rec & Accuracy-centric; no XAI \\
+Fu et al.\ \citep{fu2024federated} & Sports (federated) & Sports image data & 16 & GA-optimised CNN, federated & \pmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \pmark & \cmark & Accuracy & Few classes; no XAI \\
+Liu \citep{liu2024comparison} & Sports image classification & 100-class sports & 100 & 4 CNNs compared & \cmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark & \pmark & Accuracy & Accuracy-only; no XAI \\
+Bera et al.\ \citep{bera2023finegrained} & Fine-grained sports/yoga/dance & SYD dataset & 102 & SYD-Net (attention) & \cmark & \pmark & \cmark & \pmark & \xmark & \xmark & \pmark & \cmark & Acc, Top-$k$ & No pixel-level XAI \\
+Ray et al.\ \citep{ray2025womensports} & Women's sport actions & WSports & multi & ResNet-50 TL & \cmark & \pmark & \cmark & \xmark & \xmark & \xmark & \xmark & \pmark & Acc, F1 & Small data; no XAI \\
+Al-Otaibi et al.\ \citep{alotaibi2024gastro} & GI endoscopy & Kvasir & 8 & EfficientNet TL & \cmark & \pmark & \cmark & \xmark & \xmark & \xmark & \pmark & \pmark & Acc, F1, AUC & No XAI; single domain \\
+Ahmed et al.\ \citep{ahmed2024clothing} & Clothing/temperature & Clothing images & multi & Multi-backbone TL & \cmark & \pmark & \cmark & \cmark & \xmark & \xmark & \xmark & \pmark & Acc, F1 & No SHAP; no robustness \\
+Kumaran et al.\ \citep{kumaran2024lungcam} & Lung cancer & CT images & 3 & Ensemble TL & \cmark & \pmark & \cmark & \cmark & \xmark & \xmark & \xmark & \pmark & Acc, Prec, Rec & Grad-CAM only; no SHAP \\
+Nazim et al.\ \citep{nazim2025malware} & Malware imagery & Malware images & multi & CNN + XAI & \cmark & \pmark & \cmark & \cmark & \cmark & \xmark & \xmark & \pmark & Acc, F1 & No robustness/external val. \\
+Ram\'irez-A.\ et al.\ \citep{ramirezagudelo2026noisy} & Robustness study & CIFAR-10 & 10 & ResNet-18 & \pmark & \xmark & \cmark & \xmark & \xmark & \cmark & \pmark & \cmark & \pmark & Accuracy & Toy dataset; no XAI \\
+Karim et al.\ \citep{karim2024grapeleaf} & Grape leaf disease & Leaf images & 4 & MobileNetV3 (edge) & \cmark & \pmark & \cmark & \cmark & \xmark & \pmark & \xmark & \pmark & \cmark & Acc, F1 & Single crop; no SHAP \\
+Foysal et al.\ \citep{foysal2024plantleaf} & Plant leaf disease & Leaf images & multi & CNN + mobile app & \pmark & \pmark & \pmark & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & Accuracy & No XAI; limited eval. \\
+Isong \citep{isong2025lightweight} & Lightweight CNNs & MNIST/Fashion & 10 & Lightweight CNNs & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \pmark & \cmark & Acc, Size & Simple datasets; no XAI \\
+Manole et al.\ \citep{manole2024dermatology} & Dermatology & Skin images & multi & EfficientNetB3 TL & \cmark & \pmark & \pmark & \pmark & \xmark & \xmark & \pmark & \pmark & Acc, AUC & Limited XAI; single domain \\
+Bassi et al.\ \citep{bassi2024lrp} & Background bias & X-ray/others & multi & ISNet (LRP) & \cmark & \pmark & \cmark & \cmark & \xmark & \cmark & \cmark & \cmark & Acc, F1, AUC & Complex; not sports \\
+\midrule
+\textbf{Proposed study} & \textbf{Sports image classification} & \textbf{100 Sports \citep{piosenka2022sports}} & \textbf{100} & \textbf{Custom CNN, EfficientNetV2-B0, ConvNeXt-Tiny} & \cmark & \pmark & \cmark & \cmark & \cmark & \pmark & \xmark & \pmark & \cmark & \textbf{Acc, Top-$k$, macro-F1, efficiency} & Single dataset; no external validation \\
+\bottomrule
+\end{tabular}
+\end{sidewaystable}
+
+\input{sections/03_methodology}
+
+% ---- methodology / dataset figures ----
+\projfig{figures/workflow.png}{0.95}{End-to-end workflow of the proposed explainable sports-image
+classification framework: dataset acquisition and inspection, preprocessing and augmentation, custom
+CNN and transfer-learning model development, two-stage training, multi-metric evaluation, Grad-CAM
+and SHAP interpretation, and web deployment.}{fig:workflow}
+
+\projfig{figures/sample_grid.png}{0.95}{Representative training images, one per class for a random
+subset of the 100 sports categories, illustrating the visual diversity and the fine-grained
+similarity between some sports.}{fig:samples}
+
+\projfig{figures/class_distribution.png}{0.9}{Per-class training-image counts across the 100 sports
+categories (sorted), showing that the dataset is approximately balanced with roughly 135 images per
+class.}{fig:dist}
+
+\input{sections/04_results_discussion}
+
+% ---- results figures ----
+\projfig{figures/training_curves.png}{0.95}{Training and validation accuracy (left) and loss (right)
+across epochs for the custom CNN, EfficientNetV2-B0, and ConvNeXt-Tiny, indicating convergence
+behaviour, the early-stopping point, and the train/validation gap used to assess overfitting.}{fig:curves}
+
+\projfig{figures/model_comparison.png}{0.7}{Test-set accuracy and macro-F1 for the three models,
+summarising the overall performance comparison.}{fig:cmp}
+
+\projfig{figures/confusion_matrix.png}{0.8}{Row-normalised 100$\times$100 confusion matrix of the
+best model on the test set; off-diagonal mass concentrates among visually similar sports.}{fig:cm}
+
+\projfig{figures/gradcam.png}{0.95}{Grad-CAM visualisations for the best model on correct
+high-confidence, correct low-confidence, and misclassified test images; the top row shows the input
+and the bottom row the class-discriminative heatmap overlaid on the image.}{fig:gradcam}
+
+\projfig{figures/shap.png}{0.95}{SHAP attributions (or occlusion-sensitivity fallback) for selected
+test images, indicating which regions positively or negatively support the predicted sport.}{fig:shap}
+
+\input{sections/05_conclusion}
+
+% =============================================================== References
+\bibliographystyle{elsarticle-num}
+\bibliography{references}
+
+\end{document}

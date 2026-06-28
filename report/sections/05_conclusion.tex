@@ -1,0 +1,16 @@
+\section{Conclusion}
+This work addressed the problem of automatic and explainable classification of sports images across 100 fine-grained categories, where visual similarity between disciplines and a long-tailed distribution make reliable recognition challenging.
+To this end, we compared a custom convolutional neural network trained from scratch against two pretrained backbones, EfficientNetV2-B0 and ConvNeXt-Tiny, adapted through a two-stage transfer-learning procedure that first trains a new classification head and then fine-tunes deeper layers.
+All models were evaluated with a consistent protocol combining top-1 accuracy, top-k accuracy, macro-averaged F1, and confusion-matrix analysis, and their predictions were interpreted using Grad-CAM and SHAP to expose the visual evidence behind each decision.
+Among the configurations studied, \bestModel{} delivered the strongest overall performance and was selected as the reference model for deployment.
+The principal finding is that transfer learning substantially improved classification quality over the custom baseline, confirming that representations learned on large-scale data transfer effectively to the sports domain even with a modest in-domain training set.
+The Explainable-AI analysis further showed that the saliency and attribution maps concentrated on sport-relevant regions, such as athletes, equipment, and characteristic court or field structures, rather than on incidental background cues, which strengthens confidence that the learned decision boundaries are semantically grounded.
+In practical terms, the resulting system was packaged as a browser-based, explainable prototype using Gradio, demonstrating a deployable tool that could assist sports media indexing and content tagging by returning both a prediction and an accompanying visual rationale.
+The main limitation is that evaluation relied on a single public dataset without external validation, so the reported generalization may not extend to unconstrained real-world imagery, and the produced heatmaps indicate where the model attends but do not constitute formal proof of its reasoning.
+A concrete and valuable future direction is therefore an external validation and robustness study on independently sourced sports images, complemented by model compression to reduce the deployment footprint while preserving accuracy and interpretability.
+
+\section*{Declarations}
+The author acknowledges the use of a generative artificial-intelligence assistant to support drafting, structuring, and language refinement during the preparation of this manuscript.
+All AI-assisted content was critically reviewed, verified, and edited by the author, who takes full responsibility for the accuracy, integrity, and final form of the work.
+The author declares no competing financial interests or personal relationships that could have influenced the research reported here.
+The study used only a publicly available and appropriately licensed dataset, and no proprietary, sensitive, or personally identifying data were collected or processed.

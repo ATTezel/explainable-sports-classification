@@ -1,0 +1,129 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The automatic recognition of sport categories from still images sits at the intersection of computer vision, media technology, and the growing demand for transparent artificial intelligence.
+Modern sports organisations, broadcasters, and media archives generate enormous volumes of visual content that must be searched, filtered, and retrieved by category, yet the manual labelling of such material is slow, costly, and inconsistent across human annotators.
+Convolutional neural networks (CNNs) have repeatedly demonstrated state-of-the-art performance on large-scale visual recognition problems, and transfer learning from networks pretrained on ImageNet has made these capabilities accessible even when only modest amounts of domain-specific labelled data are available.
+At the same time, the deployment of opaque high-accuracy models has raised concerns about whether predictions are driven by genuinely meaningful visual evidence or by spurious background cues, motivating the integration of explainable artificial intelligence (XAI) into image classification pipelines.
+This report investigates the classification of 100 fine-grained sport categories from the publicly available ``100 Sports Image Classification'' dataset \citep{piosenka2022sports}, comparing a custom CNN baseline against two modern pretrained backbones and pairing the resulting models with complementary explanation methods.
+By combining a systematic accuracy comparison with an analysis of efficiency, training behaviour, and explanation reliability, the study aims to characterise not only which model classifies sports best but also which model can be trusted and deployed as a practical, transparent prototype.
+
+\subsection{Application Background and Practical Importance}
+\label{sec:intro-application}
+
+Sports imagery is one of the most heavily consumed and produced categories of visual media, appearing in live broadcasts, news outlets, social platforms, streaming services, and long-running historical archives.
+Broadcasters and content owners increasingly rely on automated indexing to tag footage by sport, enabling rapid retrieval, highlight generation, content recommendation, and analytics over large catalogues that no team of human editors could process at scale.
+The stakeholders affected by this capability are broad and include media archivists who must catalogue decades of accumulated material, editorial teams that assemble time-sensitive coverage, advertisers who target audiences by sporting interest, and end users who expect accurate search and recommendation.
+Manual tagging remains the traditional fallback, but it is limited by human throughput, annotator fatigue, subjective interpretation of ambiguous frames, and the high cost of employing domain experts to distinguish visually similar disciplines.
+Slow or inaccurate tagging carries real consequences, ranging from mislabelled archive entries and broken search experiences to lost advertising revenue and the inability to surface relevant content during fast-moving live events.
+These pressures have driven sustained research interest in automated sports recognition, including deep network designs optimised through swarm-based hyperparameter search \citep{zhou2024tuna}, squeeze-and-excitation residual architectures tailored to sports imagery \citep{li2024seres}, and federated approaches that learn across distributed data sources \citep{fu2024federated}.
+Fine-grained recognition of closely related activities, such as distinguishing variants of gymnastics, martial arts, or racquet sports, is an especially demanding sub-problem that has attracted dedicated architectural attention \citep{bera2023finegrained}.
+Automated image analysis therefore directly addresses a documented operational bottleneck, offering consistent, scalable, and rapid categorisation that complements rather than merely replaces human curation.
+
+\subsection{Machine Learning and Computer Vision Context}
+\label{sec:intro-cv-context}
+
+The central technical challenge in sport recognition is the extraction of discriminative visual features that separate one category from another despite wide variation in viewpoint, lighting, scale, and scene composition.
+Traditional computer vision approaches depended on hand-engineered descriptors that encoded edges, textures, colours, or keypoints, requiring substantial domain expertise and often generalising poorly across the heterogeneous conditions found in real sports photography.
+Deep convolutional neural networks replaced this manual feature engineering with hierarchical representations learned directly from pixels, progressing from low-level edges and textures in early layers to increasingly abstract, semantically meaningful patterns in deeper layers.
+The introduction of very deep architectures with residual connections demonstrated that network depth could be increased dramatically without degrading optimisation, yielding large gains on benchmark recognition tasks \citep{he2016resnet}.
+Densely connected designs further showed that aggressive feature reuse across layers improves parameter efficiency and gradient flow while strengthening representational power \citep{huang2017densenet}.
+These advances made deep learning the dominant paradigm for image classification and established the convolutional backbone as the standard feature extractor for visual recognition.
+A persistent obstacle, however, is the reliance of deep CNNs on large quantities of labelled training data, which are expensive and time-consuming to assemble for specialised domains such as a 100-class sports taxonomy.
+When labelled examples per class are limited, training large networks from scratch tends to overfit and to underperform, which motivates strategies that transfer knowledge from data-rich source domains to the target task.
+
+\subsection{Transfer Learning for the Selected Problem}
+\label{sec:intro-transfer}
+
+Training a deep CNN from scratch on a moderately sized dataset risks poor convergence, overfitting, and the need for extensive computational resources and hyperparameter tuning that may be impractical in applied settings.
+Transfer learning addresses these limitations by initialising a model with weights learned on a large, diverse source corpus such as ImageNet, so that generic visual features are already present before any domain-specific training begins.
+In practice, two complementary strategies are common: feature extraction, in which the pretrained backbone is frozen and only a new classification head is trained, and fine-tuning, in which some or all of the backbone weights are subsequently adapted to the target domain.
+The feature-extraction stage rapidly produces a competitive baseline at low cost, while careful fine-tuning of the upper layers allows the network to specialise its representations to the target categories without discarding the broadly useful features captured during pretraining.
+This two-stage paradigm has proven effective across diverse applied domains, including endoscopic gastrointestinal analysis with EfficientNet backbones \citep{alotaibi2024gastro} and dermatological image classification with EfficientNet variants \citep{manole2024dermatology}, demonstrating that pretrained convolutional features transfer well even to specialised visual problems.
+For the present study, two modern backbones are selected as transfer-learning candidates because they offer strong accuracy at favourable parameter and compute budgets: EfficientNetV2-B0, which combines compound scaling with training-aware neural architecture search for fast and efficient learning \citep{tan2021efficientnetv2}, and ConvNeXt-Tiny, which modernises the convolutional design in light of vision-transformer insights while retaining the inductive biases of CNNs \citep{liu2022convnext}.
+Detailed architectural and training configurations are deferred to the Methodology, and the present discussion is limited to motivating why pretrained EfficientNetV2 and ConvNeXt backbones are well suited to fine-grained 100-class sports recognition under realistic data and compute constraints.
+
+\subsection{Explainable AI and Trustworthiness}
+\label{sec:intro-xai}
+
+Evaluating an image classifier solely on aggregate accuracy can obscure the question of whether a model arrives at its decisions for the right reasons.
+A network may achieve high accuracy by exploiting incidental correlations in the data, such as recurring stadium signage, crowd appearance, or court colour, rather than by attending to the athletes, equipment, and playing surfaces that genuinely define a sport.
+This phenomenon, known as shortcut learning, is well documented and shows that deep networks frequently latch onto unintended features that happen to be predictive on the training distribution but fail to generalise robustly \citep{geirhos2020shortcut}.
+Related analyses confirm that background and contextual bias can dominate model behaviour, with relevance-attribution studies revealing that classifiers sometimes rely heavily on regions outside the object of interest \citep{bassi2024lrp}.
+Explainable artificial intelligence offers tools to probe these behaviours, and surveys of XAI in computer vision describe a rich and rapidly maturing landscape of methods for interrogating model reasoning \citep{nguyen2025xaicv}.
+Two widely adopted and complementary techniques are employed in this study: Grad-CAM, which produces class-discriminative localisation maps highlighting the image regions most responsible for a prediction \citep{selvaraju2017gradcam}, and SHAP, which assigns additive feature-attribution values grounded in cooperative game theory to quantify the contribution of input regions \citep{lundberg2017shap}.
+For a sports-tagging system intended to operate over large media archives, explainability is not a cosmetic addition but a prerequisite for trust, because operators must be able to verify that automated labels rest on sport-relevant evidence before relying on them for retrieval, analytics, or publication.
+Pairing accuracy measurement with visual and attribution-based explanations therefore allows this report to assess both how well and how soundly each model performs.
+
+\subsection{Research Gap}
+\label{sec:intro-gap}
+
+Although sports image classification and explainable deep learning are each individually active areas, several gaps remain at their intersection that this study is positioned to address.
+First, direct head-to-head comparisons of a purpose-built custom CNN against modern pretrained backbones on a fine-grained 100-class sports benchmark are uncommon, and existing comparative studies often consider a narrower set of architectures or coarser category sets \citep{liu2024comparison}.
+Second, much of the sports-recognition literature concentrates on maximising accuracy through architectural innovation or fine-grained discrimination \citep{bera2023finegrained}, while explanation and reliability analysis are rarely paired with the classifier to verify that decisions rest on sport-relevant regions.
+Third, deployment-oriented concerns such as inference speed, model size, and the trade-off between predictive performance and computational footprint are seldom analysed alongside accuracy, even though they are decisive for practical adoption in media pipelines \citep{ray2025womensports}.
+This study does not claim that no prior work touches these themes; rather, it observes that they are seldom treated together within a single, reproducible investigation on a large fine-grained sports taxonomy.
+By jointly examining custom-versus-pretrained performance, efficiency, and the faithfulness of complementary explanations on the same 100-class problem, the work aims to consolidate these threads into a coherent and reproducible evaluation.
+Closing this combined gap is important because the value of an automated sports classifier in practice depends not only on its accuracy but also on its efficiency and on the trustworthiness of the evidence behind its predictions.
+
+\subsection{Problem Statement}
+\label{sec:intro-problem}
+
+The problem addressed in this report is how to accurately, efficiently, and transparently classify still images into one of 100 fine-grained sport categories drawn from a single public dataset \citep{piosenka2022sports}.
+This involves determining whether transfer learning from modern pretrained backbones offers a measurable advantage over a custom CNN trained from scratch on the same data, and quantifying that advantage in terms of standard classification metrics.
+It further requires assessing the computational cost of each approach, including inference speed and model size, so that predictive performance can be weighed against the resource constraints of realistic deployment.
+Finally, the problem extends beyond raw prediction to the question of trust: whether the resulting models base their decisions on visually meaningful, sport-relevant regions rather than on background shortcuts, as revealed through complementary Grad-CAM and SHAP explanations.
+Addressing these dimensions together defines the central problem of building a sports-image classifier that is simultaneously accurate, efficient, and explainable enough to be deployed as a usable prototype.
+
+\subsection{Aim and Objectives}
+\label{sec:intro-aim}
+
+The aim of this study is to design, train, compare, and explain CNN-based models for 100-class sports image classification, and to identify the model offering the best balance of accuracy, efficiency, and explanation quality for deployment as a transparent web-based prototype.
+To achieve this aim, the following measurable objectives are pursued:
+
+\begin{itemize}
+  \item Acquire and preprocess the ``100 Sports Image Classification'' dataset, including verification of the train, validation, and test splits and preparation of consistent input pipelines for all models.
+  \item Design and train a custom CNN baseline from scratch to establish a reference level of performance against which transfer learning can be measured.
+  \item Implement EfficientNetV2-B0 and ConvNeXt-Tiny using ImageNet-pretrained weights with a new classification head, applying a two-stage frozen-then-fine-tuned training procedure.
+  \item Compare all models quantitatively using appropriate classification metrics such as accuracy and per-class performance, supported by confusion analysis over the 100 categories.
+  \item Evaluate the efficiency and training behaviour of each model, including inference speed, model size, and convergence characteristics, to characterise performance-cost trade-offs.
+  \item Generate and analyse Grad-CAM and SHAP explanations to assess whether model decisions focus on sport-relevant regions rather than background cues.
+  \item Conduct error and limitation analysis and demonstrate deployment of the best model as an explainable web application suitable for hosting as an interactive prototype.
+\end{itemize}
+
+\subsection{Research Questions}
+\label{sec:intro-rq}
+
+The investigation is organised around five research questions that connect classification performance, transfer learning, explainability, efficiency, and deployment:
+
+\begin{itemize}
+  \item \textbf{RQ1:} Which model best classifies sports categories from image data?
+  \item \textbf{RQ2:} Does transfer learning improve recognition compared with a custom CNN?
+  \item \textbf{RQ3:} Do Grad-CAM and SHAP explanations focus on sport-relevant regions (athletes, equipment, court/pitch) rather than background shortcuts?
+  \item \textbf{RQ4:} Which model gives the best trade-off between classification performance, inference speed, and model size?
+  \item \textbf{RQ5:} Can the best model be deployed as an explainable web-based sports-image classification prototype?
+\end{itemize}
+
+\subsection{Contributions and Novelty}
+\label{sec:intro-contributions}
+
+This report makes several contributions that jointly address the gap between high-accuracy sports recognition and trustworthy, deployable explainable systems, going beyond the routine application of standard CNNs by integrating comparison, explanation, efficiency, and deployment within one coherent study.
+The specific contributions are as follows:
+
+\begin{itemize}
+  \item A reproducible end-to-end pipeline for 100-class sports image classification, covering data preparation, training, evaluation, explanation, and deployment on a single public dataset.
+  \item A systematic head-to-head comparison of a custom CNN baseline against the EfficientNetV2-B0 and ConvNeXt-Tiny pretrained backbones on a fine-grained 100-class sports benchmark.
+  \item A paired Grad-CAM and SHAP reliability analysis applied to sports imagery, assessing whether model decisions rest on sport-relevant regions rather than background shortcuts.
+  \item An efficiency-performance trade-off analysis that weighs accuracy against inference speed and model size to inform practical model selection.
+  \item A deployed, explainable web-based prototype that exposes the best model together with its visual explanations for interactive use.
+\end{itemize}
+
+\subsection{Report Organization}
+\label{sec:intro-organization}
+
+The remainder of this report is structured as follows.
+Section~\ref{sec:introduction} has introduced the problem, motivation, research gap, aim, objectives, research questions, and contributions.
+The subsequent section reviews related work on sports image classification, transfer learning, and explainable artificial intelligence to situate the study within the existing literature.
+The methodology section then details the dataset, preprocessing, model architectures, two-stage transfer-learning procedure, evaluation metrics, and the Grad-CAM and SHAP explanation methods.
+The results section reports the quantitative comparison of the models together with their efficiency characteristics and explanation analyses, after which a discussion interprets these findings in relation to the research questions, including error analysis, limitations, and the deployed prototype.
+The report closes with conclusions that summarise the key findings and outline directions for future work.

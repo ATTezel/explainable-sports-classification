@@ -1,0 +1,97 @@
+# Explainable Sports Category Classification Using CNN Transfer Learning
+
+A comparative, **explainable** image-classification study that recognizes the **sport category** of a
+still image across **100 sports classes**, comparing a **Custom CNN** baseline against two
+ImageNet-pretrained backbones — **EfficientNetV2-B0** and **ConvNeXt-Tiny** — and interpreting the
+best model with **Grad-CAM** and **SHAP**. Built for the *Machine Learning & Smart Systems* module
+project (Topic **12.4 — Explainable Sports Category Classification**).
+
+> **Author:** Arda Tekin Tezel · University of Europe for Applied Sciences
+
+---
+
+## Research questions
+- **RQ1** — Which model best classifies sports categories from image data?
+- **RQ2** — Does transfer learning improve recognition compared with a custom CNN?
+- **RQ3** — Do Grad-CAM and SHAP explanations focus on sport-relevant regions (athletes, equipment, court/pitch) rather than background shortcuts?
+- **RQ4** — Which model gives the best trade-off between classification performance, inference speed, and model size?
+- **RQ5** — Can the best model be deployed as an explainable web-based sports-image classification prototype?
+
+## Dataset
+[**100 Sports Image Classification**](https://www.kaggle.com/datasets/gpiosenka/sports-classification)
+(Kaggle, `gpiosenka/sports-classification`) — 100 classes, **13,493 train + 500 valid + 500 test**
+images (5 valid + 5 test per class), all **224×224×3 JPG**.
+
+## Repository structure
+```
+ML-Project-Sports-CNN/
+├── notebook/
+│   ├── sports_cnn_explainable.ipynb   # Kaggle-ready: trains 3 models, evaluates, Grad-CAM + SHAP,
+│   │                                  #   exports results.json + figures, zips them
+│   └── build_notebook.py              # regenerates the .ipynb from source
+├── app/
+│   ├── app.py                         # Gradio web demo (top-5 + Grad-CAM)
+│   ├── requirements.txt
+│   └── README.md                      # Hugging Face Spaces deploy guide
+├── report/
+│   ├── main.tex                       # Overleaf (elsarticle) research report
+│   ├── references.bib                 # 39 verified references
+│   ├── sections/                      # report body (\input into main.tex)
+│   └── figures/                       # drop results.zip figures here
+├── slides/                            # presentation outline + video script
+├── PROJECT_PLAN.md
+└── README.md
+```
+
+## Reproduce (Phase 2)
+1. Open [Kaggle](https://www.kaggle.com) → **New Notebook** → upload `notebook/sports_cnn_explainable.ipynb`.
+2. **Add Input** → search *"100 Sports Image Classification"* (gpiosenka) → add it.
+3. Settings → **Accelerator: GPU** (T4/P100), Internet **On** (for ImageNet weights).
+4. **Run All**. Runtime ≈ 30–60 min.
+5. From the **Output** panel download `results.zip` (figures + `results.json`) and `models/best_model.keras`.
+
+## Run the web app (Phase 2 front-end)
+```bash
+cd app
+# place best_model.keras and class_names.json (from the Kaggle output) next to app.py
+pip install -r requirements.txt
+python app.py
+```
+Deploy free on Hugging Face Spaces — see [`app/README.md`](app/README.md).
+
+## Tech stack
+Python · TensorFlow/Keras · scikit-learn · SHAP · Matplotlib · Gradio · Kaggle GPU
+
+## Models
+| Model | Role | Pretraining |
+|---|---|---|
+| Custom CNN | baseline | trained from scratch |
+| EfficientNetV2-B0 | transfer learning | ImageNet |
+| ConvNeXt-Tiny | transfer learning | ImageNet |
+
+## Project links
+- **Kaggle notebook:** _add after running_
+- **Overleaf report:** _add share link_
+- **Live web app (HF Space):** _add after deploy_
+- **Presentation video:** _add link_
+
+---
+
+## Push this to GitHub (public)
+```bash
+cd "ML-Project-Sports-CNN"
+git init -b main
+git add .
+git commit -m "Explainable Sports Category Classification — CNN transfer learning + Grad-CAM/SHAP"
+# create an empty public repo on github.com first, then:
+git remote add origin https://github.com/<your-username>/sports-cnn-explainable.git
+git push -u origin main
+```
+Or with the GitHub CLI:
+```bash
+gh repo create sports-cnn-explainable --public --source=. --remote=origin --push
+```
+
+> **Note on results:** the report's numeric tables/figures are placeholders (shown in red) until the
+> Kaggle run produces `results.json` — the implementation and report results are kept consistent, as
+> required by the brief.

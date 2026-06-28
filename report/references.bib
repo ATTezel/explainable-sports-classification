@@ -1,0 +1,369 @@
+% ============================================================================
+%  References for "Explainable Sports Category Classification Using CNN
+%  Transfer Learning". All entries are real, verified peer-reviewed works /
+%  datasets gathered via live literature search. 39 references; >80% post-2021.
+% ============================================================================
+
+% ----------------------------- Datasets -------------------------------------
+@misc{piosenka2022sports,
+  title        = {{100 Sports Image Classification}},
+  author       = {Piosenka, Gerry},
+  year         = {2022},
+  howpublished = {Kaggle dataset},
+  note         = {100 classes, 13{,}493 train / 500 valid / 500 test images, 224$\times$224 JPG},
+  url          = {https://www.kaggle.com/datasets/gpiosenka/sports-classification}
+}
+
+@misc{metaalbum2022spt,
+  title        = {{SPT: Sports Actions Dataset (Meta-Album)}},
+  author       = {{Meta-Album Team}},
+  year         = {2022},
+  howpublished = {Meta-Album benchmark (NeurIPS 2022 Datasets and Benchmarks)},
+  url          = {https://meta-album.github.io/datasets/SPT.html}
+}
+
+@misc{harkal2023sports,
+  title        = {{Sports Image Classification}},
+  author       = {Harkal, Siddheshwar},
+  year         = {2023},
+  howpublished = {Kaggle dataset},
+  url          = {https://www.kaggle.com/datasets/sidharkal/sports-image-classification}
+}
+
+% ------------------------ Sports image classification -----------------------
+@article{zhou2024tuna,
+  title   = {Improved sports image classification using deep neural network and novel tuna swarm optimization},
+  author  = {Zhou, Zetian and Zhang, Heqing and Effatparvar, Mehdi},
+  journal = {Scientific Reports},
+  volume  = {14},
+  pages   = {14121},
+  year    = {2024},
+  doi     = {10.1038/s41598-024-64826-7}
+}
+
+@article{li2024seres,
+  title   = {Research on sports image classification method based on {SE-RES-CNN} model},
+  author  = {Li, Qinglan and Lei, Jichong and Ren, Changan and Peng, Zhiqiang and Hong, Jun},
+  journal = {Scientific Reports},
+  volume  = {14},
+  pages   = {19087},
+  year    = {2024},
+  doi     = {10.1038/s41598-024-69965-5}
+}
+
+@article{fu2024federated,
+  title   = {Enhancing sports image data classification in federated learning through genetic algorithm-based optimization of base architecture},
+  author  = {Fu, De Sheng and Huang, Jie and Hazra, Dibyanarayan and Dwivedi, Amit Kumar and Gupta, Suneet Kumar and Shivahare, Basu Dev and Garg, Deepak},
+  journal = {PLOS ONE},
+  volume  = {19},
+  number  = {7},
+  pages   = {e0303462},
+  year    = {2024},
+  doi     = {10.1371/journal.pone.0303462}
+}
+
+@inproceedings{liu2024comparison,
+  title     = {Comparison of Four Convolutional Neural Network-Based Algorithms for Sports Image Classification},
+  author    = {Liu, Xiangchen},
+  booktitle = {Proc. 2023 Int. Conf. on Data Science, Advanced Algorithm and Intelligent Computing (DAI 2023)},
+  publisher = {Atlantis Press},
+  year      = {2024},
+  doi       = {10.2991/978-94-6463-370-2_20}
+}
+
+@article{bera2023finegrained,
+  title   = {Fine-Grained Sports, Yoga, and Dance Postures Recognition: A Benchmark Analysis},
+  author  = {Bera, Asish and Nasipuri, Mita and Krejcar, Ondrej and Bhattacharjee, Debotosh},
+  journal = {IEEE Transactions on Instrumentation and Measurement},
+  volume  = {72},
+  pages   = {1--13},
+  year    = {2023},
+  doi     = {10.1109/TIM.2023.3308294}
+}
+
+@inproceedings{ray2024wsports,
+  title     = {{WSports-50}: An Image Dataset for Women's Sport Action Classification},
+  author    = {Ray, Palash and Bera, Asish and Krejcar, Ondrej and Bhattacharjee, Debotosh and Nasipuri, Mita},
+  booktitle = {Proc. 4th Int. Conf. on Frontiers in Computing and Systems (COMSYS 2023), Lecture Notes in Networks and Systems},
+  volume    = {975},
+  publisher = {Springer},
+  year      = {2024},
+  doi       = {10.1007/978-981-97-2614-1_32}
+}
+
+@article{ray2025womensports,
+  title   = {Women Sport Actions Dataset for Visual Classification Using Small Scale Training Data},
+  author  = {Ray, Palash and Sasmal, Mahuya and Bera, Asish},
+  journal = {Proc. of the Institution of Mechanical Engineers, Part P: Journal of Sports Engineering and Technology},
+  year    = {2025},
+  doi     = {10.1177/17543371251353662}
+}
+
+% --------------------------- CNN architectures ------------------------------
+@inproceedings{tan2021efficientnetv2,
+  title     = {{EfficientNetV2}: Smaller Models and Faster Training},
+  author    = {Tan, Mingxing and Le, Quoc V.},
+  booktitle = {Proc. 38th Int. Conf. on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {139},
+  pages     = {10096--10106},
+  year      = {2021}
+}
+
+@inproceedings{liu2022convnext,
+  title     = {A {ConvNet} for the 2020s},
+  author    = {Liu, Zhuang and Mao, Hanzi and Wu, Chao-Yuan and Feichtenhofer, Christoph and Darrell, Trevor and Xie, Saining},
+  booktitle = {Proc. IEEE/CVF Conf. on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {11976--11986},
+  year      = {2022},
+  doi       = {10.1109/CVPR52688.2022.01167}
+}
+
+@inproceedings{he2016resnet,
+  title     = {Deep Residual Learning for Image Recognition},
+  author    = {He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
+  booktitle = {Proc. IEEE Conf. on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {770--778},
+  year      = {2016},
+  doi       = {10.1109/CVPR.2016.90}
+}
+
+@inproceedings{sandler2018mobilenetv2,
+  title     = {{MobileNetV2}: Inverted Residuals and Linear Bottlenecks},
+  author    = {Sandler, Mark and Howard, Andrew and Zhu, Menglong and Zhmoginov, Andrey and Chen, Liang-Chieh},
+  booktitle = {Proc. IEEE Conf. on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {4510--4520},
+  year      = {2018},
+  doi       = {10.1109/CVPR.2018.00474}
+}
+
+@inproceedings{howard2019mobilenetv3,
+  title     = {Searching for {MobileNetV3}},
+  author    = {Howard, Andrew and Sandler, Mark and Chu, Grace and Chen, Liang-Chieh and Chen, Bo and Tan, Mingxing and Wang, Weijun and Zhu, Yukun and Pang, Ruoming and Vasudevan, Vijay and Le, Quoc V. and Adam, Hartwig},
+  booktitle = {Proc. IEEE/CVF Int. Conf. on Computer Vision (ICCV)},
+  pages     = {1314--1324},
+  year      = {2019},
+  doi       = {10.1109/ICCV.2019.00140}
+}
+
+@inproceedings{huang2017densenet,
+  title     = {Densely Connected Convolutional Networks},
+  author    = {Huang, Gao and Liu, Zhuang and van der Maaten, Laurens and Weinberger, Kilian Q.},
+  booktitle = {Proc. IEEE Conf. on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {4700--4708},
+  year      = {2017},
+  doi       = {10.1109/CVPR.2017.243}
+}
+
+% ------------------- Applied transfer-learning image studies ----------------
+@article{alotaibi2024gastro,
+  title   = {Efficient-gastro: optimized {EfficientNet} model for the detection of gastrointestinal disorders using transfer learning and wireless capsule endoscopy images},
+  author  = {Al-Otaibi, Shaha and Rehman, Amjad and Mujahid, Muhammad and Alotaibi, Sarah and Saba, Tanzila},
+  journal = {PeerJ Computer Science},
+  volume  = {10},
+  pages   = {e1902},
+  year    = {2024},
+  doi     = {10.7717/peerj-cs.1902}
+}
+
+@article{ahmed2024clothing,
+  title   = {A deep transfer learning based convolution neural network framework for air temperature classification using human clothing images},
+  author  = {Ahmed, Maqsood and Zhang, Xiang and Shen, Yonglin and Ali, Nafees and Flah, Aymen and Kanan, Mohammad and Alsharef, Mohammad and Ghoneim, Sherif S. M.},
+  journal = {Scientific Reports},
+  volume  = {14},
+  pages   = {31658},
+  year    = {2024},
+  doi     = {10.1038/s41598-024-80657-y}
+}
+
+@article{manole2024dermatology,
+  title   = {Enhancing Dermatological Diagnostics with {EfficientNet}: A Deep Learning Approach},
+  author  = {Manole, Ionela and Butacu, Alexandra-Irina and Bejan, Raluca Nicoleta and Tiplica, George-Sorin},
+  journal = {Bioengineering},
+  volume  = {11},
+  number  = {8},
+  pages   = {810},
+  year    = {2024},
+  doi     = {10.3390/bioengineering11080810}
+}
+
+% --------------------------- Explainability methods -------------------------
+@inproceedings{selvaraju2017gradcam,
+  title     = {{Grad-CAM}: Visual Explanations from Deep Networks via Gradient-Based Localization},
+  author    = {Selvaraju, Ramprasaath R. and Cogswell, Michael and Das, Abhishek and Vedantam, Ramakrishna and Parikh, Devi and Batra, Dhruv},
+  booktitle = {Proc. IEEE Int. Conf. on Computer Vision (ICCV)},
+  pages     = {618--626},
+  year      = {2017},
+  doi       = {10.1109/ICCV.2017.74}
+}
+
+@inproceedings{chattopadhay2018gradcampp,
+  title     = {{Grad-CAM++}: Generalized Gradient-Based Visual Explanations for Deep Convolutional Networks},
+  author    = {Chattopadhay, Aditya and Sarkar, Anirban and Howlader, Prantik and Balasubramanian, Vineeth N.},
+  booktitle = {Proc. IEEE Winter Conf. on Applications of Computer Vision (WACV)},
+  pages     = {839--847},
+  year      = {2018},
+  doi       = {10.1109/WACV.2018.00097}
+}
+
+@inproceedings{wang2020scorecam,
+  title     = {{Score-CAM}: Score-Weighted Visual Explanations for Convolutional Neural Networks},
+  author    = {Wang, Haofan and Wang, Zifan and Du, Mengnan and Yang, Fan and Zhang, Zijian and Ding, Sirui and Mardziel, Piotr and Hu, Xia},
+  booktitle = {Proc. IEEE/CVF Conf. on Computer Vision and Pattern Recognition Workshops (CVPRW)},
+  pages     = {24--25},
+  year      = {2020},
+  doi       = {10.1109/CVPRW50498.2020.00020}
+}
+
+@inproceedings{lundberg2017shap,
+  title     = {A Unified Approach to Interpreting Model Predictions},
+  author    = {Lundberg, Scott M. and Lee, Su-In},
+  booktitle = {Advances in Neural Information Processing Systems 30 (NeurIPS)},
+  pages     = {4765--4774},
+  year      = {2017}
+}
+
+@article{kumaran2024lungcam,
+  title   = {Explainable lung cancer classification with ensemble transfer learning of {VGG16}, {ResNet50} and {InceptionV3} using {Grad-CAM}},
+  author  = {Kumaran S, Yogesh and Jeya, J. Jospin and Mahesh, T. R. and Khan, Surbhi Bhatia and Alzahrani, Saeed and Alojail, Mohammed},
+  journal = {BMC Medical Imaging},
+  volume  = {24},
+  pages   = {176},
+  year    = {2024},
+  doi     = {10.1186/s12880-024-01345-x}
+}
+
+@article{nazim2025malware,
+  title   = {Advancing malware imagery classification with explainable deep learning: A state-of-the-art approach using {SHAP}, {LIME} and {Grad-CAM}},
+  author  = {Nazim, Sadia and Alam, Muhammad Mansoor and Rizvi, Syed Safdar and Mustapha, Jawahir Che and Hussain, Syed Shujaa and Suud, Mazliham Mohd},
+  journal = {PLOS ONE},
+  volume  = {20},
+  number  = {2},
+  pages   = {e0318542},
+  year    = {2025},
+  doi     = {10.1371/journal.pone.0318542}
+}
+
+@article{ennab2025pixel,
+  title   = {Advancing {AI} Interpretability in Medical Imaging: A Comparative Analysis of Pixel-Level Interpretability and {Grad-CAM} Models},
+  author  = {Ennab, Mohammad and Mcheick, Hamid},
+  journal = {Machine Learning and Knowledge Extraction},
+  volume  = {7},
+  number  = {1},
+  pages   = {12},
+  year    = {2025},
+  doi     = {10.3390/make7010012}
+}
+
+@article{tempel2024shapgradcam,
+  title   = {Choose Your Explanation: A Comparison of {SHAP} and {GradCAM} in Human Activity Recognition},
+  author  = {Tempel, Felix and Groos, Daniel and Ihlen, Espen Alexander F. and Adde, Lars and Str{\"u}mke, Inga},
+  journal = {Applied Intelligence},
+  year    = {2025},
+  doi     = {10.1007/s10489-025-06968-3}
+}
+
+% ------------------- Robustness, deployment, efficiency ---------------------
+@misc{ramirezagudelo2026noisy,
+  title        = {The Role of Noisy Data in Improving {CNN} Robustness for Image Classification},
+  author       = {Ram{\'i}rez-Agudelo, Oscar H. and Gorea, Nicoleta and Reif, Aliza and Bonasera, Lorenzo and Karl, Michael},
+  year         = {2025},
+  howpublished = {Proc. SPIE Applications of Machine Learning, arXiv:2601.08043},
+  url          = {https://arxiv.org/abs/2601.08043}
+}
+
+@inproceedings{siedel2023corruption,
+  title     = {Investigating the Corruption Robustness of Image Classifiers with Random {Lp}-norm Corruptions},
+  author    = {Siedel, Georg and Shao, Weijia and Vock, Silvia and Morozov, Andrey},
+  booktitle = {Proc. 19th Int. Conf. on Computer Vision Theory and Applications (VISAPP)},
+  year      = {2024},
+  doi       = {10.5220/0012296400003660}
+}
+
+@article{karim2024grapeleaf,
+  title   = {Enhancing agriculture through real-time grape leaf disease classification via an edge device with a lightweight {CNN} architecture and {Grad-CAM}},
+  author  = {Karim, Md. Jawadul and Goni, Md. Omaer Faruq and Nahiduzzaman, Md. and Ahsan, Mominul and Haider, Julfikar and Kowalski, Marcin},
+  journal = {Scientific Reports},
+  volume  = {14},
+  pages   = {16022},
+  year    = {2024},
+  doi     = {10.1038/s41598-024-66989-9}
+}
+
+@misc{foysal2024plantleaf,
+  title        = {Multi-Class Plant Leaf Disease Detection: A {CNN}-based Approach with Mobile App Integration},
+  author       = {Foysal, Md Aziz Hosen and Ahmed, Foyez and Haque, Md Zahurul},
+  year         = {2024},
+  howpublished = {arXiv:2408.15289},
+  url          = {https://arxiv.org/abs/2408.15289}
+}
+
+@misc{isong2025lightweight,
+  title        = {Building Efficient Lightweight {CNN} Models},
+  author       = {Isong, Nathan},
+  year         = {2025},
+  howpublished = {arXiv:2501.15547},
+  url          = {https://arxiv.org/abs/2501.15547}
+}
+
+% ------------------- Trustworthy / explainable-AI evaluation ----------------
+@article{skliarov2025xaicompare,
+  title   = {A comparative evaluation of explainability techniques for image data},
+  author  = {Skliarov, Mykyta and El Shawi, Radwa and Dhaoui, Chedia and Ahmed, Nada},
+  journal = {Scientific Reports},
+  volume  = {15},
+  year    = {2025},
+  doi     = {10.1038/s41598-025-25839-y}
+}
+
+@article{bassi2024lrp,
+  title   = {Improving deep neural network generalization and robustness to background bias via layer-wise relevance propagation optimization},
+  author  = {Bassi, Pedro R. A. S. and Dertkigil, Sergio S. J. and Cavalli, Andrea},
+  journal = {Nature Communications},
+  volume  = {15},
+  pages   = {291},
+  year    = {2024},
+  doi     = {10.1038/s41467-023-44371-z}
+}
+
+@article{geirhos2020shortcut,
+  title   = {Shortcut learning in deep neural networks},
+  author  = {Geirhos, Robert and Jacobsen, J{\"o}rn-Henrik and Michaelis, Claudio and Zemel, Richard and Brendel, Wieland and Bethge, Matthias and Wichmann, Felix A.},
+  journal = {Nature Machine Intelligence},
+  volume  = {2},
+  pages   = {665--673},
+  year    = {2020},
+  doi     = {10.1038/s42256-020-00257-z}
+}
+
+@misc{ye2024cleverhans,
+  title        = {The Clever Hans Mirage: A Comprehensive Survey on Spurious Correlations in Machine Learning},
+  author       = {Ye, Wenqian and Jiang, Luyang and Xie, Eric and Zheng, Guangtao and Ma, Yunsheng and Cao, Xu and Guo, Dongliang and Qi, Daiqing and He, Zeyu and Tian, Yijun and others},
+  year         = {2024},
+  howpublished = {arXiv:2402.12715},
+  url          = {https://arxiv.org/abs/2402.12715}
+}
+
+@misc{nguyen2025xaicv,
+  title        = {{xAI-CV}: An Overview of Explainable Artificial Intelligence in Computer Vision},
+  author       = {Nguyen, Van Tu and Pham, Nguyen Hai Long and Vo, Hoai Viet},
+  year         = {2025},
+  howpublished = {arXiv:2509.18913},
+  url          = {https://arxiv.org/abs/2509.18913}
+}
+
+@misc{kares2025saliency,
+  title        = {What Makes for a Good Saliency Map? Comparing Strategies for Evaluating Saliency Maps in Explainable {AI}},
+  author       = {Kares, Felix and Speith, Timo and Zhang, Hanwei and Langer, Markus},
+  year         = {2025},
+  howpublished = {arXiv:2504.17023},
+  url          = {https://arxiv.org/abs/2504.17023}
+}
+
+@misc{suhail2025shortcut,
+  title        = {Shortcut Learning Susceptibility in Vision Classifiers},
+  author       = {Suhail, Pirzada and Goel, Vrinda and Sethi, Amit},
+  year         = {2025},
+  howpublished = {ICLR 2025 SCSL Workshop, arXiv:2502.09150},
+  url          = {https://arxiv.org/abs/2502.09150}
+}

@@ -1,0 +1,377 @@
+\section{Methodology}
+\label{sec:methodology}
+
+This section specifies the complete experimental methodology used to build, train, evaluate, and explain a set of convolutional models for fine-grained sports image classification, in sufficient detail to permit independent reproduction.
+The study compares a custom convolutional neural network (CNN) baseline against two modern ImageNet-pretrained backbones, EfficientNetV2-B0 \citep{tan2021efficientnetv2} and ConvNeXt-Tiny \citep{liu2022convnext}, on the publicly available ``100 Sports Image Classification'' dataset \citep{piosenka2022sports}.
+The methodology is organised so that each design decision is traceable to the implementation: the dataset and its splits, the data-preparation pipeline, the three model architectures, the two-stage transfer-learning training procedure, the evaluation framework, and the explainable artificial intelligence (XAI) analysis.
+All preprocessing, augmentation, and model-specific normalisation are embedded inside the model graphs so that the same trained artefact behaves identically during training, validation, and deployment.
+A fixed random seed of $42$ is applied throughout to make data ordering, augmentation sampling, and weight initialisation as deterministic as the runtime permits.
+Quantitative predictive performance, computational efficiency, and explanation reliability are reported jointly, reflecting the study's aim of identifying not only the most accurate model but also the most trustworthy and deployable one.
+The overall pipeline, from raw image folders through preprocessing, model training, evaluation, and explanation, is summarised in Figure~\ref{fig:workflow}.
+
+\subsection{Research Design}
+\label{subsec:method-design}
+
+The research design is experimental, quantitative, and comparative, framing sports recognition as a supervised single-label image classification problem over $100$ mutually exclusive sport categories.
+Three models are trained and evaluated under an identical data pipeline and an identical evaluation protocol, so that observed differences can be attributed to architecture and training strategy rather than to inconsistent preprocessing or measurement.
+The custom CNN serves as a from-scratch baseline that establishes the difficulty of the task without external knowledge, while the two pretrained backbones quantify the benefit of transfer learning from ImageNet.
+The design is therefore a controlled comparison in which the dependent variables are predictive accuracy, class-level quality, computational cost, and explanation fidelity, and the independent variable is the model and its training regime.
+Each model is treated as a complete, self-contained graph that ingests raw $224\times224\times3$ images and emits a $100$-dimensional class-probability vector, ensuring that the only differences between experiments are the intended ones.
+The full experimental workflow, comprising data loading, model construction, two-stage training, multi-metric evaluation, and the Grad-CAM and SHAP explanation stages, is depicted in Figure~\ref{fig:workflow} and is followed identically for every model.
+This structure supports a fair head-to-head comparison and yields evidence that is directly interpretable in terms of practical model selection.
+
+\subsection{Dataset Description}
+\label{subsec:method-dataset}
+
+\subsubsection{Dataset Source and Accessibility}
+\label{subsubsec:method-source}
+
+All experiments use a single, public dataset, the ``100 Sports Image Classification'' collection curated by Piosenka and distributed through Kaggle under the identifier \texttt{gpiosenka/sports-classification} \citep{piosenka2022sports}.
+No external or proprietary dataset is introduced, which keeps the study fully reproducible from a single openly licensed source and avoids any dependence on private data.
+The dataset is supplied as three directories, \texttt{train}, \texttt{valid}, and \texttt{test}, together with a CSV file that maps each image filename to its class label and split.
+This folder-per-class organisation allows the data to be ingested directly with the Keras utility \texttt{image\_dataset\_from\_directory}, which infers integer labels from the directory structure using \texttt{label\_mode='int'}.
+Because the source provides an official partitioning, the experimental splits are taken as released rather than resampled, which removes a common source of inconsistency between studies.
+The public availability of both the images and the accompanying label CSV means that every result reported here can be regenerated from the original Kaggle release without additional annotation.
+
+\subsubsection{Dataset Composition}
+\label{subsubsec:method-composition}
+
+The dataset comprises $13{,}493$ training images, $500$ validation images, and $500$ test images, for a total of $14{,}493$ labelled examples spanning $100$ sport classes.
+The validation and test partitions each contain exactly five images per class, giving a clean and perfectly balanced held-out evaluation of five validation and five test images for every one of the $100$ categories.
+The training partition contains the remaining images and averages approximately $135$ images per class, which provides a moderate but non-trivial amount of supervision for each category.
+Every image is stored as a three-channel JPG at a uniform resolution of $224\times224\times3$ pixels, so no rescaling of spatial dimensions is required to match the input expected by standard ImageNet backbones.
+The uniform size and channel count simplify the pipeline considerably, because all images can be batched without padding or aspect-ratio correction.
+The combination of a large balanced training set and small balanced evaluation sets is well suited to a controlled comparison, although the modest per-class evaluation count is accounted for explicitly in the statistical-reliability discussion.
+
+\subsubsection{Class Definitions}
+\label{subsubsec:method-classes}
+
+The $100$ classes correspond to distinct sport categories, ranging from widely recognised disciplines to visually similar and fine-grained activities that differ only in subtle equipment, posture, or scene cues.
+Each image carries exactly one ground-truth label, so the task is single-label multi-class classification rather than multi-label tagging, and the categories are treated as mutually exclusive.
+The integer label assigned by \texttt{image\_dataset\_from\_directory} is derived from the alphabetical ordering of the class subdirectories, and this fixed ordering is preserved consistently across training, validation, testing, and all reported confusion matrices.
+Fine-grained distinctions among related categories, such as different racquet sports, combat disciplines, or water-based events, make the taxonomy challenging and motivate the use of top-$k$ accuracy alongside top-$1$ accuracy.
+The class labels recovered from the directory structure are cross-checked against the provided CSV mapping to confirm that the numeric indices used during training correspond to the intended human-readable sport names.
+Maintaining a single canonical class ordering ensures that per-class metrics and confusion-matrix axes are directly comparable across the three models.
+
+\subsubsection{Dataset Quality Assessment}
+\label{subsubsec:method-quality}
+
+The dataset is assessed for the properties that most affect supervised image classification, namely consistent dimensionality, valid channel structure, balanced labels, and absence of corrupt files.
+All images conform to the stated $224\times224\times3$ JPG format, which removes the variability in size and aspect ratio that often complicates real-world image pipelines.
+The held-out partitions are exactly balanced at five images per class, and the training partition is near-balanced at roughly $135$ images per class, so no class is grossly under-represented.
+Because the dataset is widely used and curated, gross labelling errors are expected to be rare; nonetheless, the label CSV is used to verify that filenames, directory membership, and class indices remain mutually consistent before training.
+Loading the data through the standard Keras utility additionally surfaces any unreadable or malformed image during dataset construction, providing an implicit integrity check on the JPG files.
+The principal quality limitation is the small size of the evaluation partitions, which constrains the precision of per-class estimates and is therefore treated as a known caveat rather than a defect requiring correction.
+
+\subsubsection{Dataset Visualization}
+\label{subsubsec:method-visualization}
+
+To document the visual character of the data and to confirm correct label alignment, a representative grid of training images with their associated class labels is generated and shown in Figure~\ref{fig:samples}.
+This sample grid illustrates the wide variation in viewpoint, scale, lighting, and background that the models must accommodate, as well as the visual similarity between certain fine-grained categories.
+The empirical distribution of training images across the $100$ classes is plotted in Figure~\ref{fig:dist}, which makes the near-balanced nature of the training set directly visible.
+The class-distribution plot confirms that per-class counts cluster tightly around the mean of approximately $135$ images, with no class exhibiting the extreme scarcity that would necessitate resampling.
+Together these two visualisations verify that the data have been loaded with correct labels and that the balance assumption underpinning the class-imbalance strategy is justified by the actual counts.
+Inspecting the data visually before modelling also guards against silent pipeline errors, such as mismatched labels or unintended channel reordering, that summary statistics alone might miss.
+
+\subsection{Data Preparation}
+\label{subsec:method-prep}
+
+\subsubsection{Data Cleaning}
+\label{subsubsec:method-cleaning}
+
+Because the dataset is pre-curated and uniformly formatted, data cleaning is light and is restricted to verification rather than transformation.
+Images are confirmed to share the expected $224\times224\times3$ shape, and any file that fails to decode during dataset construction would be excluded by the loader, ensuring that only valid JPG images enter the pipeline.
+The label CSV is used to confirm that every image filename maps to a single, valid class and split, so that ambiguous or duplicated label assignments are detected before training.
+No manual relabelling, cropping, or deduplication is applied, since the official curation already enforces consistent structure and the study deliberately preserves the released data to maximise reproducibility.
+Pixel values are left in their native $[0,255]$ range at this stage, deferring all normalisation to the model-specific preprocessing layers described below.
+This minimal-intervention cleaning policy keeps the input identical across all three models and avoids introducing preprocessing artefacts that could confound the comparison.
+
+\subsubsection{Data Splitting}
+\label{subsubsec:method-split}
+
+The study uses the official train/validation/test partitioning supplied with the dataset, comprising $13{,}493$ training, $500$ validation, and $500$ test images, and does not re-split or shuffle examples across partitions.
+Adopting the released splits guarantees that no image appears in more than one partition, eliminating data leakage between training and evaluation by construction.
+The validation partition is used exclusively for monitoring during training, for early stopping, and for learning-rate scheduling, while the test partition is reserved strictly for final, single-pass evaluation of each trained model.
+Keeping the test set untouched until the final evaluation ensures that reported test metrics reflect genuine generalisation rather than information that leaked through repeated tuning.
+Because the partitions are class-balanced in their held-out portions, the validation and test estimates are not biased toward any particular sport category.
+This strict separation of training, validation, and test roles is applied identically to all three models so that their reported test results are mutually comparable.
+
+\subsubsection{Image Preprocessing}
+\label{subsubsec:method-preprocessing}
+
+Images are loaded and retained in the raw integer range $[0,255]$, and each model applies its own model-appropriate normalisation internally rather than relying on a shared external transform.
+The custom CNN includes a \texttt{Rescaling} layer that divides pixel values by $255$ to map inputs into $[0,1]$ as its first numeric operation after augmentation.
+The two pretrained backbones instead apply their official preprocessing functions inside the graph, namely \texttt{efficientnet\_v2.preprocess\_input} for EfficientNetV2-B0 and \texttt{convnext.preprocess\_input} for ConvNeXt-Tiny, so that inputs match the statistics expected by the ImageNet-pretrained weights.
+Embedding preprocessing as layers within each model means that the exported artefact normalises inputs consistently, removing any risk of a train-test preprocessing mismatch.
+The target spatial size is fixed at $224\times224$, which coincides with both the native resolution of the dataset and the canonical input size of the chosen backbones, so no resizing is necessary.
+All images are processed as three-channel RGB tensors, and the batched dataset feeds these tensors directly into the model-specific preprocessing stage.
+
+\subsubsection{Data Augmentation}
+\label{subsubsec:method-augmentation}
+
+Data augmentation is implemented as a sequence of Keras preprocessing layers placed at the front of every model and active only at training time, automatically disabled during validation, testing, and inference.
+The augmentation pipeline applies \texttt{RandomFlip('horizontal')}, \texttt{RandomRotation(0.08)}, \texttt{RandomZoom(0.10)}, and \texttt{RandomContrast(0.10)}, introducing mild geometric and photometric variation that discourages overfitting to incidental scene details.
+Only horizontal flipping is used, because the identity of a sport is invariant to mirroring, whereas vertical flipping is deliberately excluded as it would produce physically implausible, upside-down scenes that do not occur in real sports imagery.
+The rotation, zoom, and contrast ranges are kept small so that augmented images remain realistic and the underlying sport remains recognisable, providing regularisation without distorting the class signal.
+Because the augmentation layers live inside the model graph, the same augmentation behaviour is applied identically to all three architectures, keeping the regularisation contribution consistent across the comparison.
+Performing augmentation on-graph also ensures that each training epoch samples fresh transformations of every image, effectively enlarging the apparent diversity of the moderate-sized training set.
+
+\subsubsection{Class-Imbalance Handling}
+\label{subsubsec:method-imbalance}
+
+The training partition is near-balanced, with approximately $135$ images per class and no category exhibiting severe under-representation, as confirmed by the distribution shown in Figure~\ref{fig:dist}.
+Given this near-uniform class frequency, no resampling, class weighting, or oversampling is applied, because such corrections offer little benefit when the classes are already comparable in size and can introduce their own distortions.
+The mild augmentation described above provides modest, class-agnostic regularisation that benefits all categories uniformly rather than artificially inflating any minority class.
+Because the held-out validation and test partitions are exactly balanced at five images per class, the macro-averaged metrics reported later are not biased by differential class frequency at evaluation time.
+Avoiding resampling also keeps the effective training distribution faithful to the released dataset, which strengthens the reproducibility of the reported results.
+This decision is revisited in the evaluation framework, where macro-averaging is used precisely so that every class contributes equally to the headline quality metrics regardless of small residual count differences.
+
+\subsection{Model Development}
+\label{subsec:method-models}
+
+\subsubsection{Custom CNN Baseline}
+\label{subsubsec:method-customcnn}
+
+The custom CNN is a compact from-scratch baseline that begins with an \texttt{Input(224,224,3)} layer, followed by the shared augmentation block and a \texttt{Rescaling(1/255)} layer that maps pixels into $[0,1]$.
+The feature extractor consists of four convolutional blocks with progressively increasing filter counts of $32$, $64$, $128$, and $256$, where each block contains a $3\times3$ \texttt{Conv2D} layer with same padding and ReLU activation, followed by \texttt{BatchNormalization} and \texttt{MaxPooling2D}.
+This progression deepens the channel dimension while halving the spatial resolution at each stage, yielding an increasingly abstract representation in the manner characteristic of conventional CNNs.
+After the final block, a \texttt{GlobalAveragePooling2D} layer collapses the spatial dimensions into a single feature vector, reducing parameters and providing a degree of translation invariance.
+A classification head then applies \texttt{Dropout(0.4)}, a \texttt{Dense(256)} layer with ReLU activation, a further \texttt{Dropout(0.3)}, and finally a \texttt{Dense(100)} layer with softmax activation that outputs the $100$-class probability distribution.
+The two dropout layers and the batch-normalisation within each block provide regularisation that is important when training a network of this capacity without pretrained weights.
+This baseline establishes the level of performance attainable using only the dataset itself, serving as the reference against which the transfer-learning models are judged.
+
+\subsubsection{Transfer Learning: EfficientNetV2-B0}
+\label{subsubsec:method-effnet}
+
+The first transfer-learning model is built on EfficientNetV2-B0 \citep{tan2021efficientnetv2}, a compound-scaled convolutional backbone designed for a strong accuracy-to-efficiency trade-off.
+The model graph starts with an \texttt{Input} layer and the shared augmentation block, after which \texttt{efficientnet\_v2.preprocess\_input} normalises the inputs to the distribution expected by the pretrained weights.
+The backbone is instantiated as \texttt{EfficientNetV2B0(include\_top=False, weights='imagenet')}, so that its ImageNet-pretrained convolutional features are reused while its original classification head is discarded.
+A lightweight classification head is appended, consisting of \texttt{GlobalAveragePooling2D}, \texttt{Dropout(0.3)}, and a \texttt{Dense(100)} layer with softmax activation that maps the pooled features onto the $100$ sport classes.
+Keeping the head deliberately small concentrates the model's adaptation to the target domain in a few trainable parameters during the initial feature-extraction phase, reducing the risk of overfitting.
+This configuration leverages the broad visual knowledge captured by ImageNet pretraining while requiring only modest additional training on the sports data.
+
+\subsubsection{Transfer Learning: ConvNeXt-Tiny}
+\label{subsubsec:method-convnext}
+
+The second transfer-learning model uses ConvNeXt-Tiny \citep{liu2022convnext}, a modernised convolutional architecture that incorporates design elements inspired by vision transformers while remaining fully convolutional.
+Its graph mirrors the EfficientNetV2 model exactly except for the backbone and its matching normalisation: inputs pass through the shared augmentation block and then \texttt{convnext.preprocess\_input} before entering the backbone.
+The backbone is instantiated as \texttt{ConvNeXtTiny(include\_top=False, weights='imagenet')}, again reusing ImageNet-pretrained features and discarding the original classifier.
+The identical head, comprising \texttt{GlobalAveragePooling2D}, \texttt{Dropout(0.3)}, and a softmax \texttt{Dense(100)} layer, is attached so that the only methodological difference from the EfficientNetV2 model is the backbone itself.
+Using a shared head and a shared augmentation pipeline across both pretrained models ensures that the comparison between EfficientNetV2-B0 and ConvNeXt-Tiny isolates the effect of the backbone architecture.
+This design allows the study to assess whether the transformer-inspired ConvNeXt design offers any advantage over compound-scaled EfficientNetV2 on the fine-grained sports task.
+
+\subsubsection{Feature Extraction and Fine-Tuning Strategy}
+\label{subsubsec:method-finetune}
+
+The two pretrained models are trained with a two-stage transfer-learning strategy that first extracts features and then selectively fine-tunes the backbone.
+In Stage~1, the entire backbone is frozen and only the newly added classification head is trained, allowing the randomly initialised head to adapt to the pretrained features at a relatively high learning rate of $10^{-3}$ for up to eight epochs.
+In Stage~2, the top approximately $30\%$ of the backbone layers are unfrozen while the bottom $70\%$ remain frozen, and the model is fine-tuned at a much smaller learning rate of $10^{-5}$ for up to eight further epochs.
+Unfreezing only the upper portion of the backbone adapts the most task-specific, high-level features to the sports domain while preserving the general-purpose low-level features that ImageNet pretraining provides.
+The small Stage~2 learning rate is essential to avoid catastrophically overwriting the pretrained weights, since large updates at this point would erase the very knowledge that transfer learning is intended to exploit.
+The custom CNN does not undergo this two-stage procedure; instead it is trained from random initialisation in a single stage of up to $30$ epochs at a learning rate of $10^{-3}$, reflecting its lack of any pretrained weights to preserve.
+This staged strategy balances rapid head adaptation against careful, conservative refinement of the transferred representation.
+
+\subsection{Training Procedure}
+\label{subsec:method-training}
+
+\subsubsection{Loss Function}
+\label{subsubsec:method-loss}
+
+All models are optimised with the sparse categorical cross-entropy loss, which is appropriate for single-label multi-class classification with integer-encoded targets and a softmax output.
+For a single example with integer ground-truth class $y$ and predicted class-probability vector $\hat{p}$ over $C=100$ classes, the loss is defined in Equation~\eqref{eq:loss}.
+\begin{equation}
+\label{eq:loss}
+\mathcal{L} = -\log\left(\hat{p}_{y}\right),
+\end{equation}
+where $\hat{p}_{y}$ is the predicted probability assigned to the true class, and the reported training objective is the mean of this quantity over the mini-batch.
+The sparse formulation consumes the integer labels produced by \texttt{label\_mode='int'} directly, avoiding the need to one-hot encode the $100$ classes and thereby reducing memory overhead.
+Minimising this loss is equivalent to maximising the log-likelihood of the correct sport class under the model, which aligns the training objective with the top-$1$ accuracy of primary interest.
+The same loss is used unchanged across the custom CNN and both transfer-learning models so that optimisation targets are identical in every experiment.
+
+\subsubsection{Optimizer and Learning Rate}
+\label{subsubsec:method-optimizer}
+
+All models are trained with the Adam optimiser, whose adaptive per-parameter learning rates provide stable and efficient convergence across the differing scales of the three architectures.
+The base learning rate is set to $10^{-3}$ for the custom CNN and for Stage~1 of both transfer-learning models, which is a standard, comparatively aggressive rate suitable for training a freshly initialised classification head.
+For Stage~2 fine-tuning of the pretrained backbones, the learning rate is lowered to $10^{-5}$ so that the unfrozen high-level layers are adjusted gently and the transferred representation is preserved.
+This two-tier learning-rate scheme is central to the transfer-learning strategy, separating the fast adaptation of the new head from the slow, careful refinement of the pretrained features.
+The learning rate is further modulated during training by an on-plateau scheduler, described below, which reduces it automatically when validation performance stops improving.
+Using a single optimiser family with these clearly defined learning rates keeps the optimisation procedure transparent and reproducible.
+
+\subsubsection{Training Controls}
+\label{subsubsec:method-controls}
+
+Training is governed by a consistent set of controls applied to every model, comprising a batch size of $32$, an image size of $224$, and the global random seed of $42$.
+An \texttt{EarlyStopping} callback monitors validation accuracy with a patience of four epochs and restores the best weights observed, so that training halts once validation accuracy ceases to improve and the model is rolled back to its peak state.
+A \texttt{ReduceLROnPlateau} callback monitors validation loss with a factor of $0.5$, a patience of two epochs, and a floor of \texttt{min\_lr}~$=10^{-6}$, halving the learning rate whenever the validation loss stalls.
+Together these callbacks prevent both overfitting from excessive training and stagnation from an inappropriately high learning rate, while the epoch caps of eight per stage for transfer learning and $30$ for the custom CNN bound the total training budget.
+Restoring the best weights ensures that the evaluated model corresponds to the epoch of strongest validation performance rather than the final, potentially overfit epoch.
+Because these controls are identical across all models, differences in their training behaviour reflect architecture and initialisation rather than inconsistent stopping or scheduling.
+
+\subsubsection{Hyperparameter Selection}
+\label{subsubsec:method-hyper}
+
+The hyperparameters were chosen to be standard, defensible defaults for transfer learning and compact CNNs rather than the product of an exhaustive search, in keeping with the study's emphasis on a fair and reproducible comparison.
+The complete set of training hyperparameters, including optimiser, loss, batch size, learning rates, epoch budgets, augmentation ranges, and callback settings, is consolidated in Table~\ref{tab:hyper}.
+The same values are applied to all three models wherever they are shared, with the only intentional differences being the per-model preprocessing, the backbone, and the two-stage versus single-stage training regime.
+This disciplined, mostly shared hyperparameter configuration ensures that the comparative results are attributable to the models themselves rather than to differential tuning effort.
+
+\begin{table}[htbp]
+\centering
+\caption{Training and pipeline hyperparameters used for all models.}
+\label{tab:hyper}
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Input image size & $224\times224\times3$ \\
+Batch size & $32$ \\
+Random seed & $42$ \\
+Optimiser & Adam \\
+Loss function & Sparse categorical cross-entropy \\
+Custom CNN learning rate & $10^{-3}$ \\
+Custom CNN max epochs & $30$ \\
+Transfer Stage~1 learning rate & $10^{-3}$ \\
+Transfer Stage~1 max epochs & $8$ (backbone frozen) \\
+Transfer Stage~2 learning rate & $10^{-5}$ \\
+Transfer Stage~2 max epochs & $8$ (top ${\sim}30\%$ unfrozen) \\
+EarlyStopping monitor & Validation accuracy \\
+EarlyStopping patience & $4$ (restore best weights) \\
+ReduceLROnPlateau monitor & Validation loss \\
+ReduceLROnPlateau factor & $0.5$ \\
+ReduceLROnPlateau patience & $2$ \\
+Minimum learning rate & $10^{-6}$ \\
+RandomFlip & Horizontal \\
+RandomRotation & $0.08$ \\
+RandomZoom & $0.10$ \\
+RandomContrast & $0.10$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Evaluation Framework}
+\label{subsec:method-eval}
+
+\subsubsection{Primary Predictive Metrics}
+\label{subsubsec:method-primary}
+
+The primary predictive metrics are computed on the held-out test set and quantify how accurately each model assigns the correct sport category among the $C=100$ classes.
+Overall accuracy is the fraction of correctly classified test images, defined in Equation~\eqref{eq:acc}, where $N$ is the number of test images, $y_i$ is the true class of image $i$, $\hat{y}_i$ is the predicted class, and $\mathbb{1}[\cdot]$ is the indicator function.
+\begin{equation}
+\label{eq:acc}
+\mathrm{Accuracy} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}\!\left[\hat{y}_i = y_i\right].
+\end{equation}
+For each class $c$, precision and recall are computed from the per-class true positives $\mathrm{TP}_c$, false positives $\mathrm{FP}_c$, and false negatives $\mathrm{FN}_c$, and the macro-averaged precision and recall over the $100$ sports are given by Equation~\eqref{eq:macropr}.
+\begin{equation}
+\label{eq:macropr}
+\mathrm{Precision}_{\mathrm{macro}} = \frac{1}{C}\sum_{c=1}^{C}\frac{\mathrm{TP}_c}{\mathrm{TP}_c+\mathrm{FP}_c}, \qquad
+\mathrm{Recall}_{\mathrm{macro}} = \frac{1}{C}\sum_{c=1}^{C}\frac{\mathrm{TP}_c}{\mathrm{TP}_c+\mathrm{FN}_c}.
+\end{equation}
+The macro F1 score is the unweighted mean of the per-class F1 scores, where each class F1 is the harmonic mean of its precision and recall, as expressed in Equation~\eqref{eq:macrof1}.
+\begin{equation}
+\label{eq:macrof1}
+\mathrm{F1}_{\mathrm{macro}} = \frac{1}{C}\sum_{c=1}^{C}\frac{2\,\mathrm{Precision}_c\,\mathrm{Recall}_c}{\mathrm{Precision}_c+\mathrm{Recall}_c}.
+\end{equation}
+Because the $100$ sport classes are fine-grained and frequently confusable, top-$k$ accuracy is also reported, counting a prediction as correct if the true class lies among the $k$ highest-scoring classes, as defined in Equation~\eqref{eq:topk} where $\mathrm{rank}_i(y_i)$ is the rank of the true class for image $i$ under the model's sorted output scores.
+\begin{equation}
+\label{eq:topk}
+\mathrm{Top}\text{-}k\;\mathrm{Accuracy} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}\!\left[\mathrm{rank}_i(y_i) \le k\right].
+\end{equation}
+Top-$3$ and top-$5$ accuracy are reported specifically because, in a $100$-class sports taxonomy, a model that ranks the correct discipline among its top few guesses is still operationally useful for assisted tagging even when its single top guess is wrong.
+
+\subsubsection{Class-Level Evaluation}
+\label{subsubsec:method-classlevel}
+
+Beyond the aggregate metrics, the framework reports class-level quality so that strengths and weaknesses across the $100$ sports can be examined individually.
+A per-class F1 score is computed for every category, exposing which sports are reliably recognised and which are systematically confused, information that a single accuracy figure necessarily hides.
+A weighted F1 score, which averages per-class F1 values in proportion to the number of true instances of each class, is reported alongside the macro F1 to summarise quality while accounting for any residual differences in class support.
+A full $100\times100$ confusion matrix is generated for each model, with rows indexing true classes and columns indexing predicted classes under the fixed canonical class ordering, making clusters of mutual confusion between visually similar sports directly visible.
+Macro-averaging is emphasised throughout because it treats every sport equally and therefore reflects performance on rare or difficult categories rather than being dominated by easy, well-populated ones.
+This class-level analysis turns the evaluation from a single ranking of models into a diagnostic account of where each model succeeds and where it fails.
+
+\subsubsection{Computational Efficiency}
+\label{subsubsec:method-efficiency}
+
+The framework measures computational efficiency so that predictive quality can be weighed against the practical cost of deployment.
+For each model the total number of parameters is recorded, and the on-disk model size in megabytes is estimated as the parameter count multiplied by four bytes per parameter and divided by $10^{6}$, as expressed in Equation~\eqref{eq:size}.
+\begin{equation}
+\label{eq:size}
+\mathrm{Size}_{\mathrm{MB}} = \frac{\mathrm{Parameters}\times 4}{10^{6}}.
+\end{equation}
+Wall-clock training time is logged for each model so that the cost of the from-scratch baseline and the two-stage transfer-learning runs can be compared.
+Inference latency is reported as milliseconds per image, measured as the forward-pass time over a single batch divided by the batch size, providing a representative estimate of per-image throughput at deployment.
+Reporting parameters, model size, training time, and inference latency together gives a multi-dimensional view of efficiency that complements the accuracy-oriented metrics.
+These measurements are essential for the study's deployability assessment, since a marginally more accurate model may be undesirable if it is substantially larger or slower at inference.
+
+\subsubsection{Statistical Reliability}
+\label{subsubsec:method-reliability}
+
+The statistical reliability of the reported metrics is interpreted in light of the small evaluation partitions, which contain only five test images per class and $500$ images in total.
+With so few examples per class, individual per-class F1 scores are coarse and sensitive to single misclassifications, so they are read as indicative rather than as precise point estimates.
+The macro and weighted aggregates over all $100$ classes are correspondingly more stable than any single per-class figure, because they pool information across the full $500$-image test set.
+To improve determinism and comparability, all experiments use the fixed seed of $42$, which controls data ordering, augmentation sampling, and weight initialisation as far as the runtime allows.
+The confusion matrix is used as a qualitative reliability check, since consistent, structured confusion between specific sport pairs is more trustworthy evidence than isolated errors that may reflect sampling noise.
+These considerations frame the headline numbers as well-supported comparative indicators while transparently acknowledging the precision limits imposed by the small held-out sets.
+
+\subsection{Explainable AI Methodology}
+\label{subsec:method-xai}
+
+\subsubsection{Grad-CAM Procedure}
+\label{subsubsec:method-gradcam}
+
+Gradient-weighted Class Activation Mapping (Grad-CAM) \citep{selvaraju2017gradcam} is applied to the best-performing model to visualise the spatial evidence underlying its predictions.
+The method operates on the last four-dimensional convolutional feature map of the model, computing the gradient of the predicted-class score with respect to that feature map to obtain channel-wise importance weights.
+These weights are used to form a weighted combination of the feature-map channels, after which a ReLU is applied to retain only the regions that positively support the predicted class.
+The resulting coarse heatmap is normalised, upsampled to the $224\times224$ input resolution, and overlaid on the original image so that the model's region of attention is directly visible.
+Grad-CAM maps are generated for three diagnostic cases, namely correctly classified high-confidence examples, correctly classified low-confidence examples, and misclassified examples, so that attention can be inspected across the full spectrum of model behaviour.
+This stratified selection reveals whether correct predictions are driven by the athlete and equipment rather than by spurious background cues, and whether errors coincide with attention drifting to irrelevant regions.
+
+\subsubsection{SHAP Procedure}
+\label{subsubsec:method-shap}
+
+SHapley Additive exPlanations (SHAP) \citep{lundberg2017shap} provide a complementary, attribution-based explanation that assigns a contribution to each input region for the predicted class.
+SHAP is computed with the \texttt{GradientExplainer}, using a random background set of $25$ images to approximate the expected model output against which contributions are measured.
+The explainer is configured to explain only the top-$1$ predicted class, with \texttt{ranked\_outputs=1} and \texttt{nsamples=50}, which keeps the computation tractable while focusing the attribution on the class the model actually predicts.
+Because gradient-based SHAP can be sensitive to the specific runtime and library versions, an occlusion-sensitivity fallback is provided that systematically slides a $32$-pixel grey patch across the image with a stride of $24$ pixels and records the drop in the predicted-class score at each position.
+This occlusion procedure produces a model-agnostic importance map that requires only forward passes, ensuring that an explanation is always available even if the gradient-based SHAP computation fails on the execution environment.
+Together, the SHAP attributions and the occlusion fallback corroborate or challenge the spatial evidence highlighted by Grad-CAM, strengthening confidence in the interpretation of model behaviour.
+
+\subsubsection{Explanation Assessment}
+\label{subsubsec:method-explanation-assessment}
+
+The two explanation methods are assessed jointly and qualitatively, by examining whether Grad-CAM and SHAP attribute predictions to plausible, sport-relevant evidence.
+Agreement between the gradient-based attention of Grad-CAM and the attribution maps of SHAP or occlusion increases confidence that a prediction rests on genuine visual cues rather than on dataset artefacts or background shortcuts.
+The deliberate inclusion of low-confidence and misclassified cases allows the analysis to characterise failure modes, for example attention that fixates on crowds, logos, or backgrounds instead of on the athlete or equipment.
+This assessment directly serves the study's trustworthiness objective, since a model that is both accurate and demonstrably attentive to meaningful evidence is preferable to one that is merely accurate.
+Using two methodologically distinct explanation techniques guards against the idiosyncrasies of any single method, providing a more robust basis for judging interpretability.
+The explanation analysis thereby connects the quantitative metrics to a qualitative understanding of why each model behaves as it does.
+
+\subsection{Robustness Analysis}
+\label{subsec:method-robustness}
+
+A robustness analysis is included as a planned, optional component to probe how stable the models remain when test images are degraded in ways that mimic real-world capture conditions.
+The procedure perturbs the test images with controlled corruptions, namely additive Gaussian noise, blur, brightness changes, and partial occlusion, and then re-measures classification accuracy on the perturbed inputs.
+Comparing accuracy on clean and corrupted test sets quantifies each model's sensitivity to common image degradations and indicates which architecture degrades most gracefully.
+This analysis is relevant to deployment because operational sports imagery is frequently affected by motion blur, variable lighting, compression artefacts, and partial occlusion of the athlete.
+Because it is treated as an optional extension, the robustness study augments rather than replaces the core clean-test evaluation, and its results are interpreted as supplementary evidence of practical reliability.
+A model that maintains accuracy under such corruptions is more credible for real-world tagging than one whose performance collapses under modest perturbation.
+
+\subsection{Software, Hardware, and Reproducibility}
+\label{subsec:method-software}
+
+The implementation is written in Python and built primarily on TensorFlow and Keras for model construction and training, with scikit-learn used for the computation of precision, recall, F1, and confusion matrices.
+Explanations are produced with the SHAP library and visualised, together with all figures, using Matplotlib, while the dataset is ingested through the Keras \texttt{image\_dataset\_from\_directory} utility.
+All experiments are executed on Kaggle GPU instances, specifically NVIDIA T4 or P100 accelerators, which provide sufficient memory and throughput for training the compact backbones at a batch size of $32$.
+Reproducibility is supported by fixing the global random seed to $42$, by relying on the dataset's official splits, and by embedding all preprocessing and augmentation inside the model graphs so that behaviour is identical across runs and environments.
+Trained models, a consolidated \texttt{results.json} file containing the recorded metrics, and all generated figures are written to the \texttt{/kaggle/working} directory, and the complete code is released through a public GitHub repository.
+This combination of a single public dataset, fixed seeds, open tooling, and published artefacts allows the entire study to be reproduced end to end.
+
+\subsection{Ethical and Practical Considerations}
+\label{subsec:method-ethics}
+
+The study uses only publicly available, appropriately licensed images and processes no personal data, so the privacy footprint of the work is minimal.
+Nonetheless, the imagery may carry demographic and scene biases inherited from how sports are photographed and which events are represented, and such biases could in principle skew recognition toward better-represented contexts.
+Sports tagging is a comparatively low-risk application, since errors lead to mislabelled or misretrieved media rather than to consequential decisions about individuals, which limits the potential for direct harm.
+Even so, human oversight is advised when such a system is deployed, so that automated tags are reviewed before they influence high-visibility archives, recommendations, or editorial workflows.
+The integration of Grad-CAM and SHAP explanations further supports responsible use by allowing practitioners to inspect whether predictions rest on meaningful visual evidence rather than on spurious correlations.
+By foregrounding transparency, bias awareness, and human-in-the-loop oversight, the methodology aligns the technical contribution with practical and ethical expectations for deployed visual classifiers.
