@@ -27,14 +27,28 @@ python app.py        # opens http://127.0.0.1:7860
 ```
 
 ## Deploy on Hugging Face Spaces (free, recommended)
-1. Create an account at https://huggingface.co → **New Space** → SDK **Gradio**.
-2. Upload `app.py`, `requirements.txt`, `best_model.keras`, `class_names.json` (this `README.md`
-   header configures the Space).
-3. The Space builds automatically and gives you a public URL — paste it into the report and Teams
-   submission as the **web link for the interface**.
 
-> Tip: `best_model.keras` can be large. If the Space build is slow, use Git LFS or host the model on
-> the Hugging Face Hub and load it with `huggingface_hub.hf_hub_download`.
+> Verified: this folder has been smoke-tested locally on the pinned stack (TensorFlow 2.19 + Gradio
+> 4.44) — the model loads and `predict()` returns the top-5 plus a Grad-CAM overlay. Keep the exact
+> pins in `requirements.txt`; a Keras-3 `.keras` will not load on TF ≤ 2.15, and gradio 4.44 needs
+> `huggingface_hub==0.25.2`.
+
+**Option A — one command (recommended).** Get a *write* token at
+https://huggingface.co/settings/tokens, then:
+```bash
+cd app
+HF_USER=<your-hf-username> HF_TOKEN=hf_xxx bash deploy_to_hf.sh
+```
+It creates the Space, uploads all five files (the 248 MB model goes via LFS automatically), and prints
+the public URL.
+
+**Option B — web UI.** https://huggingface.co → **New Space** → SDK **Gradio** → upload `app.py`,
+`requirements.txt`, `README.md`, `class_names.json`, and `best_model.keras` (this `README.md` header
+configures the Space).
+
+Either way you get a public URL like `https://huggingface.co/spaces/<you>/explainable-sports-classifier`
+— paste it into the report and the Teams submission as the **web link for the interface**. The build
+takes a few minutes (the 248 MB model takes a moment to load on first request).
 
 ## Alternative: Streamlit / Vercel
 The same `predict()` logic works in a Streamlit app (`st.file_uploader` → `st.image`). For a

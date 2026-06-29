@@ -1,9 +1,12 @@
-# Pinned to match the Hugging Face Space SDK header (sdk_version: 4.44.0) and the
-# notebook's TensorFlow 2.15 stack. Upper bounds prevent fresh HF builds from pulling
-# incompatible majors (Gradio 5.x renamed allow_flagging; numpy 2.x breaks TF 2.15;
-# matplotlib 3.9 removed cm.get_cmap).
+# Pinned to match the Kaggle run that produced best_model.keras: TensorFlow 2.19.0
+# (Keras 3 .keras format — it will NOT load on TF <=2.15 / Keras 2). Upper bounds keep
+# fresh HF builds reproducible (Gradio 5.x renamed allow_flagging; numpy is held <2.0
+# for broad compatibility; matplotlib 3.10 changed the colormaps API).
 gradio==4.44.0
-tensorflow==2.15.0
+# gradio 4.44 imports HfFolder/whoami from huggingface_hub's top level; hub >=0.26 removed
+# them, so pin a compatible hub or the Space crashes on import.
+huggingface_hub==0.25.2
+tensorflow==2.19.0
 numpy>=1.26.0,<2.0
 matplotlib>=3.8,<3.10
 pillow>=10.0.0
