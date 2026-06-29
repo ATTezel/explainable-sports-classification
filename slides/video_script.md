@@ -1,7 +1,8 @@
 # Presentation video — spoken script (~10 minutes = ~2 min live demo + ~8 min slides)
 
 Read naturally. Start with the **live demo** of the deployed web app, then go through the slides
-(one block per slide). Replace [bracketed] numbers with your real results after the Kaggle run.
+(one block per slide). The slide-narration numbers below are the real Kaggle results; the
+[bracketed] cues in the live-demo section depend on the image you upload on the day.
 Target: under 10 minutes total (the professor's cap).
 
 ---
@@ -63,14 +64,15 @@ weights, and the gap between training and validation accuracy shows the augmenta
 under control."
 
 **[Slide 8 — Results]**
-"On the test set, the best model is [EfficientNetV2-B0] with about [91]% accuracy and [89.5]% macro-F1,
-compared with about [81]% for the custom CNN. So transfer learning clearly helps — that answers RQ1
-and RQ2. The transfer models are also smaller-error and faster per image."
+"On the test set, the best model is ConvNeXt-Tiny with 96.4% accuracy and 96.3% macro-F1, just ahead
+of EfficientNetV2-B0 at 96.2%, and far ahead of the custom CNN at only 47%. So transfer learning
+clearly helps — a 49-point jump — which answers RQ1 and RQ2."
 
 **[Slide 9 — Class-level]**
 "The confusion matrix shows most errors happen between visually similar sports — for example
-[bowling and bocce, or different racquet sports]. The best-recognized classes have very distinctive
-scenes, while the hardest ones share equipment or settings."
+horseshoe pitching mistaken for frisbee, or baton twirling for javelin. The best-recognized classes,
+like wingsuit flying and weightlifting, score a perfect F1 of 1.0, while the hardest ones share
+equipment or throwing postures."
 
 **[Slide 10 — Explainability]**
 "Grad-CAM shows the model attends to the athlete, the ball, and the playing area rather than the
@@ -79,12 +81,13 @@ methods agree on the important regions for correct predictions — and reveal ba
 some of the wrong ones."
 
 **[Slide 11 — Efficiency & demo]**
-"On the accuracy-versus-efficiency trade-off, [EfficientNetV2-B0] wins — best accuracy at the lowest
-inference time. I deployed it as a Gradio web app: you upload an image and get the top-5 sports plus
-a live Grad-CAM heatmap. That answers RQ4 and RQ5."
+"On the accuracy-versus-efficiency trade-off, EfficientNetV2-B0 is the smart pick — it matches the top
+accuracy within 0.2 points but at about one-fifth the size and one-twelfth the latency. I deployed the
+most accurate model, ConvNeXt-Tiny, as a Gradio web app: you upload an image and get the top-5 sports
+plus a live Grad-CAM heatmap. That answers RQ4 and RQ5."
 
 **[Slide 12 — Limitations & conclusion]**
 "Limitations: a single public dataset, no external validation, and heatmaps are not proof of correct
-reasoning. In conclusion, transfer learning with [EfficientNetV2-B0] gives an accurate, efficient,
-and explainable sports classifier that runs in a browser. All code, the report, and the live demo
-are linked here. Thank you."
+reasoning. In conclusion, transfer learning gives an accurate, explainable sports classifier —
+ConvNeXt-Tiny at 96.4% accuracy, with EfficientNetV2-B0 as the efficient alternative — that runs in a
+browser. All code, the report, and the live demo are linked here. Thank you."

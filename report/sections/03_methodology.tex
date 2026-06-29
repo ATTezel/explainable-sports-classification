@@ -38,10 +38,34 @@ The public availability of both the images and the accompanying label CSV means 
 
 The dataset comprises $13{,}493$ training images, $500$ validation images, and $500$ test images, for a total of $14{,}493$ labelled examples spanning $100$ sport classes.
 The validation and test partitions each contain exactly five images per class, giving a clean and perfectly balanced held-out evaluation of five validation and five test images for every one of the $100$ categories.
-The training partition contains the remaining images and averages approximately $135$ images per class, which provides a moderate but non-trivial amount of supervision for each category.
+The training partition contains the remaining images and averages approximately $135$ images per class, ranging from $59$ to $191$ images per class (standard deviation $\approx21$), which provides a moderate but non-trivial amount of supervision for each category.
 Every image is stored as a three-channel JPG at a uniform resolution of $224\times224\times3$ pixels, so no rescaling of spatial dimensions is required to match the input expected by standard ImageNet backbones.
 The uniform size and channel count simplify the pipeline considerably, because all images can be batched without padding or aspect-ratio correction.
 The combination of a large balanced training set and small balanced evaluation sets is well suited to a controlled comparison, although the modest per-class evaluation count is accounted for explicitly in the statistical-reliability discussion.
+The full composition of the dataset, including its source, partition sizes, per-class counts, and image format, is summarised in Table~\ref{tab:dataset}.
+
+\begin{table}[htbp]
+\centering
+\caption{Composition of the ``100 Sports Image Classification'' dataset \citep{piosenka2022sports} used in this study, summarising the official train, validation, and test partitions, the per-class image counts, the image format and resolution, and the dataset source. The validation and test partitions are exactly balanced at five images per class, whereas the training partition is near-balanced at approximately $135$ images per class.}
+\label{tab:dataset}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Value} \\
+\midrule
+Dataset name          & 100 Sports Image Classification \\
+Source / identifier   & Kaggle, \texttt{gpiosenka/sports-classification} \\
+Number of classes     & $100$ sport categories \\
+Total labelled images & $14{,}493$ \\
+Training images       & $13{,}493$ ($59$--$191$ per class, mean ${\approx}135$) \\
+Validation images     & $500$ ($5$ per class, balanced) \\
+Test images           & $500$ ($5$ per class, balanced) \\
+Image format          & three-channel JPG (RGB) \\
+Image resolution      & $224\times224\times3$ pixels \\
+Annotation            & single integer class label per image \\
+Task type             & single-label multi-class classification \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsubsection{Class Definitions}
 \label{subsubsec:method-classes}
@@ -58,7 +82,7 @@ Maintaining a single canonical class ordering ensures that per-class metrics and
 
 The dataset is assessed for the properties that most affect supervised image classification, namely consistent dimensionality, valid channel structure, balanced labels, and absence of corrupt files.
 All images conform to the stated $224\times224\times3$ JPG format, which removes the variability in size and aspect ratio that often complicates real-world image pipelines.
-The held-out partitions are exactly balanced at five images per class, and the training partition is near-balanced at roughly $135$ images per class, so no class is grossly under-represented.
+The held-out partitions are exactly balanced at five images per class, and the training partition is near-balanced at roughly $135$ images per class (ranging from $59$ to $191$), so although not perfectly uniform no class is grossly under-represented.
 Because the dataset is widely used and curated, gross labelling errors are expected to be rare; nonetheless, the label CSV is used to verify that filenames, directory membership, and class indices remain mutually consistent before training.
 Loading the data through the standard Keras utility additionally surfaces any unreadable or malformed image during dataset construction, providing an implicit integrity check on the JPG files.
 The principal quality limitation is the small size of the evaluation partitions, which constrains the precision of per-class estimates and is therefore treated as a known caveat rather than a defect requiring correction.
@@ -69,7 +93,7 @@ The principal quality limitation is the small size of the evaluation partitions,
 To document the visual character of the data and to confirm correct label alignment, a representative grid of training images with their associated class labels is generated and shown in Figure~\ref{fig:samples}.
 This sample grid illustrates the wide variation in viewpoint, scale, lighting, and background that the models must accommodate, as well as the visual similarity between certain fine-grained categories.
 The empirical distribution of training images across the $100$ classes is plotted in Figure~\ref{fig:dist}, which makes the near-balanced nature of the training set directly visible.
-The class-distribution plot confirms that per-class counts cluster tightly around the mean of approximately $135$ images, with no class exhibiting the extreme scarcity that would necessitate resampling.
+The class-distribution plot confirms that per-class counts range from about $59$ to $191$ around a mean of approximately $135$ images, with no class exhibiting the extreme scarcity that would necessitate resampling.
 Together these two visualisations verify that the data have been loaded with correct labels and that the balance assumption underpinning the class-imbalance strategy is justified by the actual counts.
 Inspecting the data visually before modelling also guards against silent pipeline errors, such as mismatched labels or unintended channel reordering, that summary statistics alone might miss.
 
@@ -139,6 +163,29 @@ After the final block, a \texttt{GlobalAveragePooling2D} layer collapses the spa
 A classification head then applies \texttt{Dropout(0.4)}, a \texttt{Dense(256)} layer with ReLU activation, a further \texttt{Dropout(0.3)}, and finally a \texttt{Dense(100)} layer with softmax activation that outputs the $100$-class probability distribution.
 The two dropout layers and the batch-normalisation within each block provide regularisation that is important when training a network of this capacity without pretrained weights.
 This baseline establishes the level of performance attainable using only the dataset itself, serving as the reference against which the transfer-learning models are judged.
+The complete layer-by-layer structure of the custom CNN, together with the output shape produced at each stage, is summarised in Table~\ref{tab:customcnn}.
+
+\begin{table}[htbp]
+\centering
+\caption{Layer-by-layer architecture of the custom CNN baseline trained from scratch. Four convolutional blocks progressively increase the channel depth from $32$ to $256$ while halving the spatial resolution at each stage, after which global average pooling and a regularised dense head produce the $100$-class softmax output. The augmentation block is active only at training time, and the output shapes assume a $224\times224\times3$ input.}
+\label{tab:customcnn}
+\begin{tabular}{lll}
+\toprule
+\textbf{Stage} & \textbf{Layer(s)} & \textbf{Output shape} \\
+\midrule
+Input        & Input image                                       & $224\times224\times3$ \\
+Augmentation & RandomFlip/Rotation/Zoom/Contrast (train only)    & $224\times224\times3$ \\
+Rescaling    & Rescaling ($1/255$)                               & $224\times224\times3$ \\
+Conv block 1 & Conv2D($32$, $3{\times}3$)\,+\,BN\,+\,ReLU\,+\,MaxPool  & $112\times112\times32$ \\
+Conv block 2 & Conv2D($64$, $3{\times}3$)\,+\,BN\,+\,ReLU\,+\,MaxPool  & $56\times56\times64$ \\
+Conv block 3 & Conv2D($128$, $3{\times}3$)\,+\,BN\,+\,ReLU\,+\,MaxPool & $28\times28\times128$ \\
+Conv block 4 & Conv2D($256$, $3{\times}3$)\,+\,BN\,+\,ReLU\,+\,MaxPool & $14\times14\times256$ \\
+Pooling      & GlobalAveragePooling2D                            & $256$ \\
+Dense head   & Dropout($0.4$)\,+\,Dense($256$, ReLU)\,+\,Dropout($0.3$) & $256$ \\
+Output       & Dense($100$, softmax)                             & $100$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsubsection{Transfer Learning: EfficientNetV2-B0}
 \label{subsubsec:method-effnet}

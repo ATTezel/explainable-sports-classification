@@ -167,12 +167,12 @@ for txt, tail in [
 
 # ---- key results ----
 p = doc.add_paragraph(); r = p.add_run("Key Results (Test Set)"); set_run(r, 12.5, NAVY, bold=True)
-p = doc.add_paragraph(); r = p.add_run("Note: these are placeholder numbers — replace them with your real Kaggle results.")
-set_run(r, 9.5, RGBColor(0xB0, 0x2A, 0x37), italic=True)
+p = doc.add_paragraph(); r = p.add_run("All figures below are from the executed Kaggle run (results.json); the report and the code agree exactly.")
+set_run(r, 9.5, RGBColor(0x1E, 0x7A, 0x34), italic=True)
 for lead, tail in [
-    ("Custom CNN — ", "~81.3% accuracy, 0.796 macro-F1 (lightweight from-scratch baseline)."),
-    ("EfficientNetV2-B0 — ", "~91.0% accuracy, 0.895 macro-F1; best accuracy/size/speed balance; chosen for deployment."),
-    ("ConvNeXt-Tiny — ", "~89.1% accuracy, but the largest and most resource-intensive model."),
+    ("Custom CNN — ", "47.2% accuracy, 0.429 macro-F1 (from-scratch baseline; 0.48M params, 1.9 MB, 0.6 ms/image)."),
+    ("EfficientNetV2-B0 — ", "96.2% accuracy, 0.960 macro-F1; near-identical accuracy at ~1/5 the size and ~1/12 the latency (6.0M params, 24 MB, 9.6 ms) — best efficiency trade-off."),
+    ("ConvNeXt-Tiny — ", "96.4% accuracy, 0.963 macro-F1; the most accurate model, deployed as the best model (27.9M params, 112 MB, 113 ms)."),
 ]:
     pp = doc.add_paragraph(style="List Bullet")
     r = pp.add_run(lead); set_run(r, 10.5, bold=True)

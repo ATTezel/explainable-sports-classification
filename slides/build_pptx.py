@@ -267,8 +267,7 @@ for i, (h_, b_) in enumerate(cards):
 # two small figure placeholders
 figure(s, "sample_grid.png", 0.7, 4.35, 5.85, 2.6, "Sample images (one per class)")
 figure(s, "class_distribution.png", 6.78, 4.35, 5.85, 2.6, "Class distribution — near-balanced")
-notes(s, "Describe the dataset and preprocessing. Point to the sample grid and the near-balanced distribution. ~40s. "
-         "⚠ Replace the two figure placeholders with sample_grid.png and class_distribution.png from results.zip before recording.")
+notes(s, "Describe the dataset and preprocessing. Point to the sample grid and the near-balanced distribution (59–191 images/class, mean ~135). ~40s.")
 
 # ======================================================================
 # Slide 4 — Research Questions
@@ -313,13 +312,13 @@ cw, cy, ch = 3.82, 2.1, 3.05
 models = [
     ("1", "Custom CNN", ["From scratch; 4 convolutional blocks (32 -> 256).",
                           "BatchNorm + MaxPool; global average pooling.",
-                          "~4.0M parameters; lightweight baseline."]),
+                          "~0.48M parameters; lightweight baseline."]),
     ("2", "EfficientNetV2-B0", ["ImageNet pretrained; transfer learning.",
-                                 "Two-phase fine-tuning; ~7.1M parameters.",
-                                 "Efficiency-focused."]),
+                                 "Two-phase fine-tuning; ~6.0M parameters.",
+                                 "Efficiency-focused; best trade-off."]),
     ("3", "ConvNeXt-Tiny", ["ImageNet pretrained; modern ConvNet.",
-                             "Two-phase fine-tuning; ~28.6M parameters.",
-                             "Highest capacity."]),
+                             "Two-phase fine-tuning; ~27.9M parameters.",
+                             "Highest capacity and accuracy."]),
 ]
 for i, (n, h_, b_) in enumerate(models):
     card(s, 0.7 + i * (cw + 0.22), cy, cw, ch, h_, b_, number=n)
@@ -343,8 +342,7 @@ for b in ["All models converge within the epoch budget.",
           "The small train–validation gap shows augmentation kept overfitting under control.",
           "Transfer-learning models start higher and plateau sooner than the from-scratch baseline."]:
     para(tf, b, 14, INK, bullet="•", space_after=8)
-notes(s, "Read the training curves: convergence, early stopping, and the train-val gap as an overfitting check. ~35s. "
-         "⚠ Replace the figure placeholder with training_curves.png from results.zip before recording.")
+notes(s, "Read the training curves: convergence, early stopping, and the train-val gap as an overfitting check. ~35s.")
 
 # ======================================================================
 # Slide 8 — Results table
@@ -354,9 +352,9 @@ header(s, "Results — Test Set", "Accuracy, and the cost of chasing it",
        "Headline metrics on the 500-image held-out test set")
 rows = [
     ("Model", "Accuracy", "Macro-F1", "Top-3", "Params", "Size", "Inference"),
-    ("Custom CNN", "0.813", "0.796", "0.928", "4.0 M", "16 MB", "31.5 ms"),
-    ("EfficientNetV2-B0  ✓", "0.910", "0.895", "0.976", "7.1 M", "28 MB", "20.4 ms"),
-    ("ConvNeXt-Tiny", "0.891", "0.880", "0.965", "28.6 M", "114 MB", "23.2 ms"),
+    ("Custom CNN", "0.472", "0.429", "0.676", "0.48 M", "1.9 MB", "0.6 ms"),
+    ("EfficientNetV2-B0", "0.962", "0.960", "0.992", "6.05 M", "24 MB", "9.6 ms"),
+    ("ConvNeXt-Tiny  ✓", "0.964", "0.963", "0.994", "27.9 M", "112 MB", "113 ms"),
 ]
 nrows, ncols = len(rows), len(rows[0])
 tbl_w, tbl_h = 11.93, 2.45
@@ -384,15 +382,15 @@ for i in range(1, nrows):
         _set(r, 13.5, NAVY if best else INK, bold=(best and (j == 0 or j == 1)))
 # two callouts
 callout(s, 0.7, 4.85, 5.85, 1.6,
-        "Both pretrained backbones beat the from-scratch baseline by roughly 8–10 accuracy points, "
-        "answering RQ1 and RQ2.", fill=DARKCARD, text_color=WHITE, icon="✓",
+        "Both pretrained backbones beat the from-scratch baseline by roughly 49 accuracy points "
+        "(96% vs 47%), answering RQ1 and RQ2.", fill=DARKCARD, text_color=WHITE, icon="✓",
         title="Transfer learning wins", size=13)
 callout(s, 6.78, 4.85, 5.85, 1.6,
-        "EfficientNetV2-B0 delivers the highest accuracy AND the lowest latency at about a quarter of "
-        "ConvNeXt-Tiny's size — the best balance for deployment (RQ4).", fill=CARD_BG, text_color=NAVY, icon="⚡",
-        title="Efficiency matters", size=13)
-notes(s, REPLACE + " After the run, set the ✓ on whichever model gives the best "
-         "accuracy/size/speed balance and update every number in this table. ~50s.")
+        "ConvNeXt-Tiny is the most accurate; EfficientNetV2-B0 matches it within 0.2 points at about "
+        "one-fifth the size and one-twelfth the latency — the best efficiency trade-off (RQ4).",
+        fill=CARD_BG, text_color=NAVY, icon="⚡", title="Efficiency matters", size=12.5)
+notes(s, "Walk through the table: ConvNeXt-Tiny is most accurate (marked ✓), EfficientNetV2-B0 is nearly "
+         "tied but far cheaper, and the custom CNN trails badly. Stress the ~49-point transfer-learning gain. ~50s.")
 
 # ======================================================================
 # Slide 9 — Class-level analysis
@@ -404,12 +402,11 @@ figure(s, "confusion_matrix.png", 0.7, 2.05, 7.2, 4.6)
 tf = textbox(s, 8.15, 2.3, 4.5, 4.2)
 para(tf, "Reading the errors", 18, NAVY, bold=True, first=True, space_after=8)
 for b in ["A strong diagonal: most classes are recognised reliably.",
-          "Errors concentrate between visually similar sports — e.g. bowling vs bocce, or related racquet sports.",
-          "Distinctive-scene sports (e.g. swimming, motor racing) are near-perfect.",
+          "Errors concentrate between visually similar sports — e.g. horseshoe pitching vs frisbee, baton twirling vs javelin.",
+          "Distinctive-scene sports (e.g. wingsuit flying, wheelchair racing, weightlifting) score a perfect F1 of 1.0.",
           "This pattern is exactly what explainability then probes (RQ3)."]:
     para(tf, b, 14, INK, bullet="•", space_after=8)
-notes(s, "Use the confusion matrix to name the hardest, most-confused sports and the easiest ones. ~35s. "
-         "⚠ Replace the figure placeholder with confusion_matrix.png from results.zip before recording.")
+notes(s, "Use the confusion matrix to name the hardest, most-confused sports (frisbee, baton twirling, horseshoe pitching) and the perfect ones. ~35s.")
 
 # ======================================================================
 # Slide 10 — Explainability
@@ -427,8 +424,7 @@ callout(s, 6.78, 5.55, 5.85, 1.4,
         "On some errors the attention drifts to the background — a reliability warning that explainability "
         "surfaces and accuracy alone hides.",
         fill=RED_BG, text_color=RED_TX, icon="✕", title="But not always", size=12.5)
-notes(s, "Show Grad-CAM and SHAP agree on correct cases and expose background reliance on wrong ones. ~45s. "
-         "⚠ Replace the two figure placeholders with gradcam.png and shap.png from results.zip before recording.")
+notes(s, "Show Grad-CAM and SHAP agree on correct cases and expose background reliance on wrong ones. ~45s.")
 
 # ======================================================================
 # Slide 11 — Efficiency & deployment
@@ -438,9 +434,9 @@ header(s, "Trade-off & Deployment", "Choosing for balance, not for the leaderboa
        "Accuracy is only one axis")
 cw, cy, ch = 3.82, 2.1, 2.5
 trade = [
-    ("Custom CNN", ["16 MB · 31.5 ms.", "Fewest parameters and smallest file — yet, counter-intuitively, the slowest at inference (architecture matters more than param count)."]),
-    ("EfficientNetV2-B0", ["28 MB · 20.4 ms.", "Highest accuracy AND lowest latency.", "Selected for deployment."]),
-    ("ConvNeXt-Tiny", ["114 MB · 23.2 ms.", "Highest capacity and largest footprint, for slightly lower accuracy."]),
+    ("Custom CNN", ["1.9 MB · 0.6 ms.", "Smallest and fastest by far — but only 47% accuracy, so not usable in practice."]),
+    ("EfficientNetV2-B0", ["24 MB · 9.6 ms.", "Within 0.2 pts of the best accuracy at ~1/5 the size and ~1/12 the latency.", "Best efficiency trade-off (recommended)."]),
+    ("ConvNeXt-Tiny", ["112 MB · 113 ms.", "Highest accuracy (96.4%) but largest and slowest — deployed as the top-accuracy model."]),
 ]
 for i, (h_, b_) in enumerate(trade):
     fill = DARKCARD if i == 1 else CARD_BG
@@ -451,8 +447,7 @@ callout(s, 0.7, 4.95, 11.93, 1.45,
         "Deployed on Hugging Face Spaces with Gradio: upload an image and get the top-5 sports, "
         "confidence scores, and a live Grad-CAM heatmap — directly in the browser (RQ4 & RQ5).",
         fill=CARD_BG2, text_color=NAVY, icon="🚀", title="Live, explainable web demo")
-notes(s, "Argue for balance over raw accuracy; introduce the live demo (you will show it in the 2-min demo part). ~40s. "
-         "⚠ Size/latency numbers are placeholders — replace with real Kaggle results before recording.")
+notes(s, "Argue for balance over raw accuracy: EfficientNetV2-B0 is the efficiency pick, ConvNeXt-Tiny the accuracy pick (and what is deployed). Introduce the live demo. ~40s.")
 
 # ======================================================================
 # Slide 12 — Conclusion
@@ -461,10 +456,10 @@ s = slide()
 header(s, "Conclusion", "Accuracy is necessary. Explanation makes it trustworthy.",
        "What the study established")
 points = [
-    ("Strong results", "All three CNNs classify 100 sports well; the best exceeds ~91% test accuracy."),
-    ("Transfer learning wins", "ImageNet pretraining beats the from-scratch baseline by a wide margin (RQ1, RQ2)."),
+    ("Strong results", "The pretrained CNNs classify 100 sports well; the best (ConvNeXt-Tiny) reaches 96.4% test accuracy."),
+    ("Transfer learning wins", "ImageNet pretraining beats the from-scratch baseline by ~49 points — 96% vs 47% (RQ1, RQ2)."),
     ("Explanations validated", "Grad-CAM and SHAP confirm focus on athletes and equipment — and expose occasional background reliance (RQ3)."),
-    ("Deployed prototype", "EfficientNetV2-B0 chosen for balance and shipped as an explainable web demo (RQ4, RQ5)."),
+    ("Deployed prototype", "ConvNeXt-Tiny deployed as an explainable web demo; EfficientNetV2-B0 recommended for efficient deployment (RQ4, RQ5)."),
 ]
 y = 2.05
 for h_, b_ in points:
@@ -479,8 +474,7 @@ callout(s, 0.7, 6.0, 11.93, 1.2,
         "Single public dataset, no external validation, and heatmaps are not proof of correct reasoning. "
         "Future work: add diverse external data and reduce background-shortcut behaviour.",
         fill=CARD_BG2, text_color=NAVY, icon="🔭", title="Limitations & future work", size=12.5)
-notes(s, "Summarise the four takeaways, state limitations honestly, and thank the audience. ~40s. "
-         "⚠ The ~91% headline is a placeholder — replace with your real best-model accuracy before recording.")
+notes(s, "Summarise the four takeaways, state limitations honestly, and thank the audience. ~40s.")
 
 # ----------------------------------------------------------------------
 out = os.path.join(HERE, "sports_cnn_presentation.pptx")

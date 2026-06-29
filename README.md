@@ -86,6 +86,8 @@ Clone it with:
 git clone https://github.com/ATTezel/explainable-sports-classification.git
 ```
 
-> **Note on results:** the report's numeric tables/figures are placeholders (shown in red) until the
-> Kaggle run produces `results.json` — the implementation and report results are kept consistent, as
-> required by the brief.
+> **Results (from the executed Kaggle run):** the report's tables and figures are populated from
+> `results.json` and the 7 exported figures. Best model: **ConvNeXt-Tiny** (96.4% test accuracy,
+> 0.963 macro-F1), deployed as the prototype; **EfficientNetV2-B0** is the recommended efficiency
+> trade-off (96.2% accuracy at ~1/5 the size and ~1/12 the latency); the from-scratch custom CNN
+> baseline reaches 47.2%, so transfer learning improves accuracy by ~49 points.

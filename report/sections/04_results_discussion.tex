@@ -2,7 +2,7 @@
 \label{sec:results}
 
 This section reports the empirical findings obtained by executing the experimental pipeline described in Section~\ref{sec:methodology} on the ``100 Sports Image Classification'' dataset, covering dataset preparation, training convergence, overall and class-level predictive performance, explainability, robustness, and deployment efficiency.
-Numeric values shown in red are placeholders to be replaced by the executed notebook's \texttt{results.json}.
+All reported numeric values are taken directly from the executed notebook's \texttt{results.json}, so that the report and the implementation agree exactly.
 Throughout, evidence is presented with minimal interpretation, and the explanation of \emph{why} the observed patterns arise is deferred to the Discussion in Section~\ref{sec:discussion}.
 Results are organised to address the five research questions in turn, beginning with the data foundation that underpins every subsequent measurement and ending with a consolidated table that maps each research question to its principal finding.
 All three models, the custom CNN baseline, EfficientNetV2-B0, and ConvNeXt-Tiny, are evaluated under the identical preprocessing and evaluation protocol so that the reported differences can be attributed to architecture and training strategy rather than measurement inconsistency.
@@ -14,7 +14,7 @@ Explanation behaviour is assessed qualitatively through Grad-CAM and SHAP visual
 
 After ingestion through the Keras pipeline, the dataset yielded $13{,}493$ usable training images, $500$ validation images, and $500$ test images, for a total of $14{,}493$ labelled examples across the $100$ sport classes, with no corrupt or off-specification files discarded during the integrity check.
 Every retained image conformed to the expected $224\times224\times3$ three-channel JPG format, so the final usable count matched the released dataset exactly and no spatial rescaling or channel correction was required before batching.
-The class-distribution analysis, plotted in Figure~\ref{fig:dist}, confirmed that the training partition is near-balanced, averaging approximately $135$ images per class, with the most and least populated categories differing only modestly and no class falling into severe under-representation.
+The class-distribution analysis, plotted in Figure~\ref{fig:dist}, confirmed that the training partition is approximately balanced, averaging about $135$ images per class and ranging from $59$ to $191$ images per class (standard deviation $\approx21$), so although the counts are not perfectly uniform no class falls to a level that would require resampling.
 The validation and test partitions are exactly balanced, containing precisely five images per class each, which gives a clean and uniform basis for held-out evaluation even though the small per-class evaluation count limits the resolution of class-level estimates.
 The representative sample grid in Figure~\ref{fig:samples} verifies correct label alignment and illustrates the visual heterogeneity of the data, including wide variation in viewpoint, scale, lighting, crowd background, and the presence of multiple athletes or pieces of equipment within a single frame.
 The same grid also makes the fine-grained nature of the task apparent, since several distinct classes share near-identical scenes, equipment, and postures that differ only in subtle cues.
@@ -25,10 +25,10 @@ Taken together, these preprocessing results establish a balanced, high-integrity
 \label{subsec:res-training}
 
 The training and validation learning curves for all three models are presented in Figure~\ref{fig:curves}, which plots loss and accuracy against epoch for the custom CNN single-stage run and for the two-stage transfer-learning runs of the pretrained backbones.
-The custom CNN converged slowly from random initialisation and was halted by early stopping after approximately \res{22} epochs of its $30$-epoch budget, reaching a plateau in validation accuracy while its training accuracy continued to rise, indicating a mild but visible degree of overfitting.
+The custom CNN converged slowly from random initialisation and was halted by early stopping before exhausting its $30$-epoch budget, reaching a plateau in validation accuracy while its training accuracy continued to rise, indicating a clear degree of overfitting that is consistent with its weak final test accuracy.
 The transfer-learning models converged substantially faster: during Stage~1, with the backbone frozen and only the classification head trained at a learning rate of $10^{-3}$, validation accuracy rose steeply within the first few epochs as the randomly initialised head adapted to the pretrained features.
 The transition to Stage~2 fine-tuning, in which the top $30\%$ of backbone layers were unfrozen at a learning rate of $10^{-5}$, produced a further smaller improvement in validation accuracy without destabilising the loss, confirming that the conservative fine-tuning rate preserved the transferred representation.
-EfficientNetV2-B0 reached its early-stopping point after roughly \res{12} effective epochs across both stages, and ConvNeXt-Tiny after roughly \res{13}, both well inside their combined sixteen-epoch budget.
+Both pretrained backbones reached their early-stopping points within their combined sixteen-epoch budget of eight epochs per stage, and in wall-clock terms EfficientNetV2-B0 trained fastest at roughly $405$~s while ConvNeXt-Tiny took substantially longer at about $1{,}755$~s, compared with $536$~s for the custom CNN.
 The on-plateau learning-rate scheduler was observed to reduce the rate once validation performance stalled, after which the curves flattened with negligible further change, and the best-epoch weights were restored at termination.
 The gap between training and validation curves was narrow for the pretrained models and wider for the custom CNN, consistent with stronger regularisation from the transferred features and the limited capacity of the from-scratch baseline to generalise from a moderate training set.
 No evidence of catastrophic divergence, exploding loss, or severe underfitting was observed for any model, and all three runs terminated cleanly via early stopping with their best validation weights retained for final test-set evaluation.
@@ -37,26 +37,26 @@ No evidence of catastrophic divergence, exploding loss, or severe underfitting w
 \label{subsec:res-overall}
 
 The headline test-set performance of the three models, evaluated once on the held-out $500$-image test partition, is consolidated in Table~\ref{tab:results}, and the corresponding multi-metric comparison is visualised in Figure~\ref{fig:cmp}.
-On top-$1$ accuracy, \bestModel{} achieved the strongest result at \res{91.0}\%, ahead of ConvNeXt-Tiny at \res{89.1}\% and the custom CNN baseline at \res{81.3}\%, and the same ordering held for macro-averaged $F_1$ at \res{89.5}\%, \res{88.0}\%, and \res{79.6}\% respectively.
-The macro-$F_1$ values track the accuracy values closely for every model, which is expected given the near-balanced evaluation partition, and indicates that the reported accuracies are not inflated by a small number of dominant classes.
-The top-$3$ and top-$5$ accuracies were uniformly high, reaching \res{97.6}\% and \res{99.0}\% for \bestModel{}, \res{96.5}\% and \res{98.4}\% for ConvNeXt-Tiny, and \res{92.8}\% and \res{96.0}\% for the custom CNN, showing that the correct class is almost always within the top few predictions even when it is not ranked first.
-The two ImageNet-pretrained backbones outperformed the from-scratch custom CNN by a clear margin of roughly \res{8}--\res{10} accuracy points, which is the central quantitative evidence bearing on RQ2 regarding the benefit of transfer learning over a custom architecture.
+On top-$1$ accuracy, \bestModel{} achieved the strongest result at $96.4\%$, marginally ahead of EfficientNetV2-B0 at $96.2\%$ and far ahead of the custom CNN baseline at $47.2\%$, and the same ordering held for macro-averaged $F_1$ at $96.3\%$, $96.0\%$, and $42.9\%$ respectively.
+For the two pretrained backbones the macro-$F_1$ values track top-$1$ accuracy almost exactly, which is expected given the perfectly balanced evaluation partition and indicates that their accuracies are not inflated by a few dominant classes; for the custom CNN the macro-$F_1$ of $42.9\%$ falls noticeably below its $47.2\%$ accuracy, signalling weaker and more uneven performance across the $100$ classes.
+The top-$3$ and top-$5$ accuracies were near-ceiling for the pretrained models, reaching $99.4\%$ and $99.8\%$ for \bestModel{} and $99.2\%$ and $100.0\%$ for EfficientNetV2-B0, but only $67.6\%$ and $78.0\%$ for the custom CNN, showing that the pretrained models almost always rank the correct sport among their top few predictions whereas the custom baseline frequently does not.
+The two ImageNet-pretrained backbones outperformed the from-scratch custom CNN by an emphatic margin of roughly $49$ accuracy points ($96.4\%$ and $96.2\%$ versus $47.2\%$), which is the central quantitative evidence bearing on RQ2 regarding the benefit of transfer learning over a custom architecture.
 Figure~\ref{fig:cmp} renders this ordering across all reported metrics simultaneously and shows that the advantage of the pretrained models is consistent rather than confined to a single metric.
 The margin between the two pretrained backbones themselves is comparatively small, so the identity of the single best model is determined as much by efficiency as by accuracy, a trade-off examined separately in Section~\ref{subsec:res-efficiency}.
 On predictive performance alone, \bestModel{} is identified as the strongest model in this study.
 
 \begin{table}[htbp]
 \centering
-\caption{Overall test-set performance and computational cost of the three models on the $500$-image held-out test partition. Accuracy, macro-$F_1$, top-$3$, and top-$5$ are percentages; inference latency is per-image. Values in red are placeholders pending execution of the notebook.}
+\caption{Overall test-set performance and computational cost of the three models on the $500$-image held-out test partition. Accuracy, macro-$F_1$, top-$3$, and top-$5$ are percentages; parameters are in millions; inference latency is per-image. ConvNeXt-Tiny is the most accurate model (bold), whereas EfficientNetV2-B0 attains within $0.2$ accuracy points of it at roughly one-fifth the size and one-twelfth the latency.}
 \label{tab:results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccccc}
 \toprule
 Model & Accuracy (\%) & Macro-$F_1$ (\%) & Top-3 (\%) & Top-5 (\%) & Params (M) & Size (MB) & Inference (ms) \\
 \midrule
-Custom CNN          & \res{81.3} & \res{79.6} & \res{92.8} & \res{96.0} & \res{4.0}  & \res{16.0}  & \res{31.5} \\
-EfficientNetV2-B0   & \res{91.0} & \res{89.5} & \res{97.6} & \res{99.0} & \res{7.1}  & \res{28.4}  & \res{20.4} \\
-ConvNeXt-Tiny       & \res{89.1} & \res{88.0} & \res{96.5} & \res{98.4} & \res{28.6} & \res{114.4} & \res{23.2} \\
+Custom CNN          & 47.2 & 42.9 & 67.6 & 78.0  & 0.48  & 1.93   & 0.58 \\
+EfficientNetV2-B0   & 96.2 & 96.0 & 99.2 & 100.0 & 6.05  & 24.19  & 9.60 \\
+\textbf{ConvNeXt-Tiny} & \textbf{96.4} & \textbf{96.3} & \textbf{99.4} & 99.8 & 27.90 & 111.59 & 113.14 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -65,10 +65,10 @@ ConvNeXt-Tiny       & \res{89.1} & \res{88.0} & \res{96.5} & \res{98.4} & \res{2
 \label{subsec:res-class}
 
 The class-level behaviour of the best model is summarised by the $100\times100$ confusion matrix in Figure~\ref{fig:cm}, whose strong diagonal confirms that the large majority of test images are assigned to their correct class.
-The best-performing categories were those with distinctive and unambiguous visual signatures, such as ``formula 1 racing'' and ``swimming'', which were classified with near-perfect per-class accuracy of approximately \res{100}\% and contributed almost no off-diagonal mass.
-The weakest categories were visually fine-grained or low-contrast disciplines, with ``bowling'', ``billiards'', and ``nascar racing'' among the lowest-scoring classes at per-class accuracy as low as \res{60}\%, reflecting confusion with related sports that share scenes, equipment, or motion.
-The single most-confused pair in the matrix was ``bocce'' versus ``bowling'', which the model interchanged in a notable fraction of cases because both depict players rolling or throwing a ball toward distant targets on similar surfaces.
-Other off-diagonal clusters appeared among visually adjacent groups, including motorsport variants and racquet or court sports, where the dominant background and equipment cues are shared across multiple classes.
+The best-performing categories were those with distinctive and unambiguous visual signatures, such as ``wingsuit flying'', ``wheelchair racing'', ``wheelchair basketball'', ``weightlifting'', and ``water cycling'', each classified with a perfect per-class $F_1$ of $1.0$ and contributing no off-diagonal mass.
+The weakest categories were fine-grained or visually overlapping disciplines, with ``frisbee'' ($F_1=0.73$), ``baton twirling'', ``cheerleading'', and ``horseshoe pitching'' (each $F_1=0.75$), and ``javelin'' ($F_1=0.77$) among the lowest-scoring classes, reflecting confusion with related sports that share scenes, equipment, or throwing postures.
+The most frequent confusions in the matrix were ``horseshoe pitching'' misclassified as ``frisbee'' and ``baton twirling'' misclassified as ``javelin'', each occurring twice, since both pairs share an implement-throwing or implement-twirling posture that a single still frame renders nearly identical.
+Other off-diagonal clusters appeared among visually adjacent groups, including athletics throwing and jumping events (``shot put'' with ``javelin'', ``pole vault'' with ``high jump''), combat sports (``sumo wrestling'' with ``olympic wrestling''), and motorsport variants (``sidecar racing'' with ``motorcycle racing''), where dominant background and equipment cues are shared across multiple classes.
 Because the test partition contains only five images per class, a single misclassification shifts a class accuracy by twenty percentage points, so the exact best- and worst-class rankings should be read as indicative rather than precise.
 These class-level confusions, concentrated among sports that are genuinely hard to distinguish from a single still frame, provide the behavioural context against which the explainability analysis for RQ3 is interpreted, since they reveal where the model is most at risk of relying on misleading background cues.
 The overall pattern is one of high reliability on visually distinct sports and systematic, interpretable difficulty on a small set of fine-grained look-alike categories.
@@ -83,7 +83,7 @@ Grad-CAM heatmaps were generated for the best model on representative correctly 
 For correctly classified examples of visually distinct sports, the high-activation regions concentrated on sport-relevant content, namely the athletes, their characteristic equipment, and the immediate playing surface, rather than on irrelevant background.
 For instance, in motorsport and swimming images the activation localised onto the vehicle or the swimmer in the lane, and in racquet sports it localised onto the player and racquet, indicating that class-discriminative evidence was being drawn from plausible regions.
 For several misclassified examples drawn from the most-confused categories identified in Figure~\ref{fig:cm}, the heatmaps instead emphasised broad background or crowd regions, consistent with the model attending to scene-level context when the foreground cue was ambiguous.
-Approximately \res{80}\% of the inspected correctly classified cases showed activation centred on the expected foreground object, whereas the misclassified cases showed a markedly higher rate of diffuse or background-dominated activation.
+A clear majority of the inspected correctly classified cases showed activation centred on the expected foreground object, whereas the misclassified cases showed a markedly higher rate of diffuse or background-dominated activation.
 These qualitative observations form the primary visual evidence addressing RQ3 on whether the model focuses on sport-relevant regions, with formal interpretation reserved for the Discussion.
 
 \subsubsection{SHAP Results}
@@ -93,7 +93,7 @@ SHAP attributions were computed for the same model and a comparable set of test 
 The SHAP maps assigned the strongest positive attribution to pixels lying on the athletes and their equipment for confidently and correctly classified images, in broad spatial agreement with the regions highlighted by Grad-CAM.
 The attributions were spatially finer-grained than the Grad-CAM heatmaps, resolving individual contours of equipment and limbs rather than the coarser blob-like regions characteristic of gradient-weighted activation maps.
 For ambiguous and misclassified examples, the SHAP maps revealed positive attribution scattered across background pixels and, in some cases, mild negative attribution on parts of the true foreground object, signalling competing evidence between the predicted and true classes.
-In roughly \res{75}\% of the inspected correctly classified cases, the most strongly attributed pixels coincided with the sport-relevant foreground, mirroring the Grad-CAM pattern at higher spatial resolution.
+In most of the inspected correctly classified cases, the most strongly attributed pixels coincided with the sport-relevant foreground, mirroring the Grad-CAM pattern at higher spatial resolution.
 These results provide a second, independently computed line of explainability evidence for RQ3 and RQ4 on explanation reliability.
 
 \subsubsection{Explanation Comparison}
@@ -116,18 +116,18 @@ Reporting robustness in this structured way ensures that, once the notebook is e
 \label{subsec:res-efficiency}
 
 The computational-cost columns of Table~\ref{tab:results} quantify the accuracy--efficiency trade-off that underlies RQ4, reporting parameter count, on-disk model size, and per-image inference latency for each model.
-\bestModel{} combined the highest accuracy with the lowest inference latency of \res{20.4}~ms per image and a moderate parameter count of \res{7.1}~M, giving it the most favourable accuracy-per-millisecond and accuracy-per-parameter position among the three models.
-ConvNeXt-Tiny, despite comparable accuracy, carried substantially more parameters at \res{28.6}~M and the largest on-disk footprint of \res{114.4}~MB, with a slightly higher latency of \res{23.2}~ms, making it the most resource-intensive option.
-The custom CNN had the fewest parameters at \res{4.0}~M and the smallest on-disk size of \res{16.0}~MB but, counter-intuitively, the highest inference latency of \res{31.5}~ms, while also delivering the lowest accuracy, so it did not occupy the efficiency frontier despite its compact parameterisation.
-On the combined criteria of accuracy, latency, and size, \bestModel{} therefore offered the best overall trade-off and was selected as the model to deploy, consistent with the goal of an efficient and accurate sports classifier \citep{isong2025lightweight}.
-The selected model was wrapped in an interactive Gradio web prototype that accepts an uploaded image, returns the top-$k$ predicted sports with their confidence scores, and displays the corresponding Grad-CAM overlay alongside the prediction, directly demonstrating the deployable, explainable system targeted by RQ5.
+\bestModel{} achieved the highest accuracy but proved the most resource-intensive model, with $27.9$~M parameters, an on-disk size of $111.6$~MB, and the highest inference latency of $113.1$~ms per image.
+EfficientNetV2-B0 attained almost identical accuracy ($96.2\%$ versus $96.4\%$, a difference of a single test image out of $500$) while using only $6.0$~M parameters, a $24.2$~MB footprint, and $9.6$~ms per image, roughly one-fifth the size and one-twelfth the latency of \bestModel{}, giving it by far the most favourable accuracy-per-millisecond and accuracy-per-parameter position.
+The custom CNN had by far the fewest parameters at $0.48$~M, the smallest on-disk size of $1.93$~MB, and the lowest latency of $0.58$~ms per image, but its accuracy of $47.2\%$ renders this efficiency of little practical value.
+No single model therefore dominated on every axis: because the accuracy gap between the two pretrained backbones ($0.2$ percentage points) is within evaluation noise while their efficiency gap is large, EfficientNetV2-B0 is identified as the best accuracy--efficiency trade-off and the recommended choice for latency- or memory-constrained deployment \citep{isong2025lightweight}.
+For the interactive prototype the highest-accuracy model, \bestModel{}, was wrapped in a Gradio web application that accepts an uploaded image, returns the top-$k$ predicted sports with their confidence scores, and displays the corresponding Grad-CAM overlay alongside the prediction, directly demonstrating the deployable, explainable system targeted by RQ5.
 The prototype reuses the exact trained graph, including its embedded preprocessing, so the predictions served interactively are identical to those measured in Table~\ref{tab:results}, and the per-image latency observed in the interface is consistent with the reported inference figures.
-Together these results show that an accurate sports classifier can be deployed in a lightweight, explainable, and self-contained interface suitable for browser-based and edge-oriented use.
+Together these results show that an accurate sports classifier can be deployed in an explainable, self-contained interface, with EfficientNetV2-B0 available as a lightweight, near-equally-accurate alternative for browser-based and edge-oriented use.
 
 \subsection{Comparison with Published Studies}
 \label{subsec:res-litcompare}
 
-To place the present findings in context, the \bestModel{} test accuracy of \res{91.0}\% is compared against representative deep-learning sports-recognition studies, while stressing that the comparison is indicative only.
+To place the present findings in context, the \bestModel{} test accuracy of $96.4\%$ is compared against representative deep-learning sports-recognition studies, while stressing that the comparison is indicative only.
 Recent works report broadly comparable or higher accuracies on their own sports datasets, including a tuna-swarm-optimised deep network \citep{zhou2024tuna}, a squeeze-and-excitation residual CNN \citep{li2024seres}, a federated genetic-algorithm framework \citep{fu2024federated}, a four-architecture CNN benchmark \citep{liu2024comparison}, a fine-grained sports, yoga, and dance recogniser \citep{bera2023finegrained}, and a ResNet50 women's-sports classifier \citep{ray2025womensports}.
 The accuracy obtained here sits within the range spanned by these studies, indicating that the chosen transfer-learning approach is competitive with current practice on the difficult $100$-class fine-grained setting.
 However, direct numeric comparison is fundamentally limited because these studies use different datasets, different numbers and definitions of classes, different train--validation--test splits, different image resolutions, and different evaluation protocols, so an apparently higher accuracy elsewhere may simply reflect an easier or differently partitioned benchmark.
@@ -141,17 +141,17 @@ The table makes clear that RQ1, RQ2, RQ4, and RQ5 are answered directly by the e
 
 \begin{table}[htbp]
 \centering
-\caption{Summary of evidence and principal results for each research question. Result cells with red values are placeholders pending notebook execution.}
+\caption{Summary of evidence and principal results for each research question, with all values taken from the executed notebook's \texttt{results.json}.}
 \label{tab:rqfindings}
 \begin{tabular}{p{0.9cm}p{4.1cm}p{6.0cm}p{1.6cm}}
 \toprule
 RQ & Evidence & Principal Result & Answered? \\
 \midrule
-RQ1 & Table~\ref{tab:results}, Figure~\ref{fig:cmp} & \bestModel{} is the strongest model at \res{91.0}\% top-$1$ accuracy and \res{89.5}\% macro-$F_1$. & Yes \\
-RQ2 & Table~\ref{tab:results}, Figure~\ref{fig:curves} & Transfer learning beats the custom CNN by roughly \res{8}--\res{10} accuracy points and converges faster. & Yes \\
+RQ1 & Table~\ref{tab:results}, Figure~\ref{fig:cmp} & \bestModel{} is the strongest model at $96.4\%$ top-$1$ accuracy and $96.3\%$ macro-$F_1$, just ahead of EfficientNetV2-B0 ($96.2\%$). & Yes \\
+RQ2 & Table~\ref{tab:results}, Figure~\ref{fig:curves} & Transfer learning beats the custom CNN by roughly $49$ accuracy points ($96\%$ versus $47\%$) and converges faster. & Yes \\
 RQ3 & Figure~\ref{fig:gradcam}, Figure~\ref{fig:shap}, Figure~\ref{fig:cm} & Grad-CAM and SHAP agree on sport-relevant regions for most correct cases; background reliance appears mainly in confused classes. & Qualified \\
-RQ4 & Table~\ref{tab:results} & \bestModel{} gives the best accuracy--latency--size trade-off at \res{20.4}~ms and \res{7.1}~M parameters. & Yes \\
-RQ5 & Section~\ref{subsec:res-efficiency} & A Gradio web prototype serves predictions with confidence scores and Grad-CAM overlays. & Yes \\
+RQ4 & Table~\ref{tab:results} & EfficientNetV2-B0 gives the best accuracy--efficiency trade-off ($96.2\%$ at $24$~MB and $9.6$~ms), within noise of the top accuracy at a fraction of the cost. & Yes \\
+RQ5 & Section~\ref{subsec:res-efficiency} & The best model is deployed as a Gradio web prototype serving predictions with confidence scores and Grad-CAM overlays. & Yes \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -165,7 +165,7 @@ The discussion is organised around the five research questions and closes with e
 \subsection{Interpretation of Dataset and Preprocessing Findings}
 \label{subsec:disc-dataset}
 
-The near-balanced training distribution shown in Figure~\ref{fig:dist} is the principal reason the macro-averaged $F_1$ scores tracked top-$1$ accuracy so closely, because balance removes the systematic penalty that macro-averaging imposes on models that neglect minority classes.
+The near-balanced training distribution shown in Figure~\ref{fig:dist} is the principal reason the macro-averaged $F_1$ scores tracked top-$1$ accuracy so closely for the pretrained models, because balance removes the systematic penalty that macro-averaging imposes on models that neglect minority classes; the larger gap between the custom CNN's accuracy and its macro-$F_1$ shows that, balance notwithstanding, a weak model can still perform unevenly across classes.
 With approximately $135$ images per class and no severely under-represented category, every class received enough supervision for the pretrained backbones to learn a usable representation, so the residual errors reflect genuine visual ambiguity rather than data starvation, which bears directly on the model-selection question of RQ1.
 The deliberately mild on-graph augmentation, restricted to horizontal flip, small rotation, modest zoom, and gentle contrast jitter, contributed regularisation without distorting the class signal, which is appropriate for a fine-grained task where aggressive geometric or photometric transformations could erase the very cues that separate look-alike sports.
 Embedding both augmentation and model-specific normalisation inside each model graph ensured that the training, evaluation, and deployment paths were identical, eliminating the train--serve skew that commonly inflates reported accuracy relative to real deployment behaviour.
@@ -179,16 +179,16 @@ The clear margin by which both pretrained backbones outperformed the from-scratc
 The custom CNN underperformed not because its architecture is pathological but because training a deep classifier from scratch on roughly $135$ images per class is data-limited, so it overfit incidental scene details, as evidenced by the wider train--validation gap in Figure~\ref{fig:curves}, and could not match the generalisation of transferred features \citep{he2016resnet}.
 The two-stage training strategy was instrumental: freezing the backbone in Stage~1 let the new head align with the pretrained features without corrupting them, and the deliberately tiny Stage~2 learning rate of $10^{-5}$ allowed selective fine-tuning of high-level layers while preserving the low-level filters that carry the most transferable knowledge.
 This staged regime explains why the pretrained models converged in far fewer epochs and with narrower generalisation gaps than the custom CNN, since most of their representational work was inherited rather than learned in situ.
-Crucially, the highest top-$1$ accuracy should not be equated with the best model, because the near-tie between \bestModel{} and ConvNeXt-Tiny on accuracy is broken decisively by efficiency: ConvNeXt-Tiny carries several times more parameters and a larger footprint for no reliable accuracy gain, so accuracy alone is an incomplete selection criterion.
-When accuracy, latency, and size are weighed jointly, \bestModel{} emerges as the better-engineered choice, which reframes RQ2 from a pure accuracy contest into a trade-off judgement.
+Crucially, the highest top-$1$ accuracy should not be equated with the best engineering choice, because the near-tie between \bestModel{} and EfficientNetV2-B0 on accuracy is broken decisively by efficiency: \bestModel{} carries several times more parameters and a far larger footprint for no reliable accuracy gain, so accuracy alone is an incomplete selection criterion.
+When accuracy, latency, and size are weighed jointly, EfficientNetV2-B0 emerges as the better-engineered choice, since it matches \bestModel{}'s accuracy to within a single test image at roughly one-fifth the size and one-twelfth the latency, which reframes RQ2 and RQ4 from a pure accuracy contest into a trade-off judgement.
 The broader lesson is that transfer learning supplies most of the predictive power on this task, and that architecture selection among strong pretrained backbones is governed at least as much by deployment economics as by marginal accuracy differences.
 
 \subsection{Class-Level Reliability and Error Patterns}
 \label{subsec:disc-classerror}
 
 The confusion structure in Figure~\ref{fig:cm} shows that the model is highly reliable on visually distinctive sports and systematically uncertain on a small set of fine-grained look-alikes, which is exactly the failure profile one expects when discriminative cues are subtle and scenes overlap.
-The ``bocce''--``bowling'' confusion exemplifies the core difficulty for RQ3, since both sports share the act of propelling a ball toward distant targets on a flat surface, so the equipment, posture, and scene geometry provide overlapping evidence that a single still frame cannot fully disambiguate.
-Similar reasoning explains the weakness on ``billiards'' and ``nascar racing'', where green-table or track-and-vehicle backgrounds are shared with neighbouring classes, and where the discriminative detail occupies a small fraction of the frame relative to the dominant scene context.
+The ``horseshoe pitching''--``frisbee'' confusion exemplifies the core difficulty for RQ3, since both sports centre on an athlete throwing a small implement with a similar arm action, so the posture and scene geometry provide overlapping evidence that a single still frame cannot fully disambiguate.
+Similar reasoning explains the weakness on ``baton twirling'', frequently mistaken for ``javelin'', and on the athletics throwing and jumping events such as ``shot put'' versus ``javelin'' and ``pole vault'' versus ``high jump'', where a slender implement or a single explosive posture occupies only a small fraction of the frame relative to the dominant track-and-field background shared across these classes.
 These confusions are not random noise but structured, interpretable errors driven by genuine visual similarity, which means they constitute high-risk cases in any deployed system: a confident but wrong prediction between two similar sports is more dangerous than a low-confidence abstention.
 Because the evaluation uses only five images per class, the precise identity of the worst classes is statistically fragile, so the reliable conclusion is the existence of a fine-grained-confusion regime rather than the exact ranking within it.
 The practical implication is that class-level reliability, and not just aggregate accuracy, must inform how much trust is placed in individual predictions, and that the highest-risk confusions warrant explicit human verification.
@@ -206,11 +206,11 @@ The defensible conclusion for RQ3 and RQ4 is therefore nuanced: the explanations
 \subsection{Efficiency and Practical Deployment}
 \label{subsec:disc-deploy}
 
-The efficiency results in Table~\ref{tab:results} answer the deployment-oriented thrust of RQ5 by showing that the most accurate model is also among the most computationally economical, which is the favourable case in which no accuracy must be sacrificed to achieve a deployable footprint \citep{isong2025lightweight}.
-The low latency and moderate parameter count of \bestModel{} make browser-based and edge-oriented deployment realistic, and the working Gradio prototype demonstrates that an accurate, explainable classifier can be delivered through a self-contained interface rather than remaining a notebook artefact.
+The efficiency results in Table~\ref{tab:results} answer the deployment-oriented thrust of RQ4 and RQ5 by showing that the most accurate model, \bestModel{}, is also the most computationally expensive, so a genuine accuracy--efficiency trade-off must be navigated rather than a single dominant model simply selected \citep{isong2025lightweight}.
+EfficientNetV2-B0's low latency of $9.6$~ms and moderate $24$~MB footprint make browser-based and edge-oriented deployment realistic at almost no accuracy cost, while the deployed \bestModel{} prototype demonstrates the system's accuracy ceiling; the working Gradio prototype demonstrates that an accurate, explainable classifier can be delivered through a self-contained interface rather than remaining a notebook artefact.
 Pairing every prediction with a confidence score and a Grad-CAM overlay operationalises explainability at the point of use, which is the design pattern recommended for trustworthy applied vision systems where users must judge whether to accept a prediction \citep{karim2024grapeleaf}.
 This combination directly supports human oversight, because a user confronted with a low-confidence prediction or a heatmap that highlights background rather than the expected object has actionable grounds to distrust and verify the output, particularly for the high-risk fine-grained confusions identified in Figure~\ref{fig:cm}.
-The counter-intuitive observation that the smallest-parameter custom CNN was the slowest at inference underlines that parameter count alone does not determine latency, since architectural structure and hardware utilisation also matter, reinforcing that deployment decisions must rest on measured rather than assumed efficiency.
+The roughly $200\times$ spread in inference latency across models, from $0.58$~ms for the custom CNN to $113$~ms for \bestModel{}, underlines that a small accuracy premium can carry a large efficiency penalty, reinforcing that deployment decisions must rest on jointly measured accuracy and cost rather than accuracy alone.
 Overall, the system is practically deployable, and its explainability features are positioned to assist rather than replace human judgement.
 
 \subsection{Comparison with Existing Literature}

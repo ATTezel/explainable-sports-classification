@@ -10,8 +10,8 @@
 %       model_comparison.png, confusion_matrix.png, gradcam.png, shap.png)
 %      and make a workflow.png in PowerPoint. The report COMPILES even
 %      before the images exist (placeholders are shown).
-%   4. Replace every RED \res{...} number and \bestModel with the real
-%      values from the Kaggle run's results.json.
+%   4. Results from the Kaggle run's results.json are already integrated
+%      (best model = ConvNeXt-Tiny); no \res{} placeholders remain.
 % =====================================================================
 \documentclass[review]{elsarticle}
 
@@ -26,8 +26,8 @@
 
 % --- placeholder for results not yet filled from the Kaggle run (shown red) ---
 \newcommand{\res}[1]{{\color{red}\textbf{#1}}}
-% --- the best model name (swap if a different model wins after the run) ---
-\newcommand{\bestModel}{EfficientNetV2-B0}
+% --- the best model name (highest accuracy/F1; also the saved + deployed best_model.keras) ---
+\newcommand{\bestModel}{ConvNeXt-Tiny}
 % --- comparative-matrix marks ---
 \newcommand{\cmark}{\ensuremath{\checkmark}}
 \newcommand{\xmark}{\ensuremath{\times}}
@@ -71,13 +71,15 @@ evaluation pipeline.
 Models are assessed with accuracy, top-3 and top-5 accuracy, macro-averaged precision, recall and
 F1, a 100$\times$100 confusion matrix, parameter count, model size, and inference time, and the best
 model is interpreted with Grad-CAM and SHAP.
-The best-performing model, \bestModel, reached a test accuracy of \res{91.0}\% and a macro-F1 of
-\res{89.5}\%, compared with \res{81.3}\% accuracy for the custom baseline, confirming a clear
+The best-performing model, \bestModel, reached a test accuracy of $96.4\%$ and a macro-F1 of
+$96.3\%$, far ahead of the from-scratch custom baseline at $47.2\%$ accuracy, confirming a decisive
 transfer-learning advantage.
 Grad-CAM and SHAP concentrated on sport-relevant regions such as athletes, equipment, and the
 playing area rather than background context for the majority of correct predictions.
-The resulting model is light enough (\res{50.1}~MB, \res{20.4}~ms per image) to run as an explainable
-web prototype, supporting practical, trustworthy sports-image tagging.
+The best model is deployed as an explainable web prototype, while the near-identical
+EfficientNetV2-B0 ($96.2\%$ accuracy at $24$~MB and $9.6$~ms per image, versus $112$~MB and $113$~ms)
+is identified as the most efficient deployment choice, supporting practical, trustworthy
+sports-image tagging.
 The contribution is a reproducible, explainable, and deployment-aware comparison of custom and
 pretrained CNNs for fine-grained 100-class sports image classification.
 \end{abstract}
@@ -158,8 +160,8 @@ subset of the 100 sports categories, illustrating the visual diversity and the f
 similarity between some sports.}{fig:samples}
 
 \projfig{figures/class_distribution.png}{0.9}{Per-class training-image counts across the 100 sports
-categories (sorted), showing that the dataset is approximately balanced with roughly 135 images per
-class.}{fig:dist}
+categories (sorted), showing that the dataset is approximately balanced, ranging from about 59 to 191
+images per class with a mean of roughly 135.}{fig:dist}
 
 \input{sections/04_results_discussion}
 
