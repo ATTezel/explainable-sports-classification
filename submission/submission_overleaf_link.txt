@@ -10,5 +10,5 @@ Supporting links:
   GitHub repository : https://github.com/ATTezel/explainable-sports-classification
   Dataset           : https://www.kaggle.com/datasets/gpiosenka/sports-classification
   Kaggle notebook   : https://www.kaggle.com/code/ardatezel/explainable-sports-classification
-  Live web demo     : [PASTE your Hugging Face Spaces link after you deploy app/]
+  Live web demo     : https://huggingface.co/spaces/Tezo44/explainable-sports-classifier
   Presentation video: [PASTE your YouTube/loom presentation link after you record it]

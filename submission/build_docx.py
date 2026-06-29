@@ -27,7 +27,7 @@ GITHUB   = "https://github.com/ATTezel/explainable-sports-classification"   # al
 DATASET  = "https://www.kaggle.com/datasets/gpiosenka/sports-classification"
 NOTEBOOK = "https://www.kaggle.com/code/ardatezel/explainable-sports-classification"
 OVERLEAF = "[PASTE your EDITABLE Overleaf link here — Share > Anyone can edit]"
-WEBAPP   = "[PASTE your Hugging Face Spaces link after you deploy app/]"
+WEBAPP   = "https://huggingface.co/spaces/Tezo44/explainable-sports-classifier"   # live
 VIDEO    = "[PASTE your YouTube/loom presentation link after you record it]"
 PROMPTLOG = "[OPTIONAL: PASTE your claude.ai shared-conversation link]"
 
