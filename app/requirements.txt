@@ -2,10 +2,10 @@
 # (Keras 3 .keras format — it will NOT load on TF <=2.15 / Keras 2). Upper bounds keep
 # fresh HF builds reproducible (Gradio 5.x renamed allow_flagging; numpy is held <2.0
 # for broad compatibility; matplotlib 3.10 changed the colormaps API).
-gradio==4.44.0
-# gradio 4.44 imports HfFolder/whoami from huggingface_hub's top level; hub >=0.26 removed
-# them, so pin a compatible hub or the Space crashes on import.
-huggingface_hub==0.25.2
+# gradio 5.x: the 4.44 line crashed on launch in get_api_info() (json-schema bool bug).
+# 5.50 is verified locally (get_api_info + launch + predict all work) and lets gradio pull a
+# compatible gradio_client + huggingface_hub itself, so no hub pin is needed.
+gradio==5.50.0
 tensorflow==2.19.0
 numpy>=1.26.0,<2.0
 matplotlib>=3.8,<3.10

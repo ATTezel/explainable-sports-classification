@@ -4,7 +4,7 @@ emoji: 🏅
 colorFrom: blue
 colorTo: indigo
 sdk: gradio
-sdk_version: 4.44.0
+sdk_version: 5.50.0
 python_version: "3.12"
 app_file: app.py
 pinned: false
@@ -29,10 +29,10 @@ python app.py        # opens http://127.0.0.1:7860
 
 ## Deploy on Hugging Face Spaces (free, recommended)
 
-> Verified: this folder has been smoke-tested locally on the pinned stack (TensorFlow 2.19 + Gradio
-> 4.44) — the model loads and `predict()` returns the top-5 plus a Grad-CAM overlay. Keep the exact
-> pins in `requirements.txt`; a Keras-3 `.keras` will not load on TF ≤ 2.15, and gradio 4.44 needs
-> `huggingface_hub==0.25.2`.
+> Verified: smoke-tested locally on the pinned stack (TensorFlow 2.19 + Gradio 5.50, Python 3.12) —
+> the model loads, `predict()` returns the top-5 plus a Grad-CAM overlay, and `get_api_info()` +
+> `launch()` start cleanly. Keep the pins: a Keras-3 `.keras` will not load on TF ≤ 2.15, and the
+> gradio 4.44 line crashed on launch with a json-schema bug.
 
 **Option A — one command (recommended).** Get a *write* token at
 https://huggingface.co/settings/tokens, then:

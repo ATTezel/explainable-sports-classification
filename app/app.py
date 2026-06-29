@@ -91,8 +91,8 @@ demo = gr.Interface(
              gr.Image(label="Grad-CAM explanation")],
     title=title,
     description=description,
-    allow_flagging="never",
+    flagging_mode="never",
 )
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=7860)
