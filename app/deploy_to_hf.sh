@@ -26,9 +26,15 @@ if [ ! -f best_model.keras ]; then
   exit 1
 fi
 
-python3 -m pip install --quiet --upgrade "huggingface_hub>=0.25,<0.26"
+# Use an isolated virtualenv so we never touch the system/Homebrew Python
+# (avoids macOS PEP 668 "externally-managed-environment").
+VENV_DIR="$(mktemp -d)/hf_deploy_venv"
+echo "Setting up a temporary virtualenv for huggingface_hub ..."
+python3 -m venv "$VENV_DIR"
+"$VENV_DIR/bin/python" -m pip install --quiet --upgrade pip
+"$VENV_DIR/bin/python" -m pip install --quiet "huggingface_hub>=0.25,<0.26"
 
-HF_USER="$HF_USER" HF_TOKEN="$HF_TOKEN" SPACE="$SPACE" python3 - <<'PY'
+HF_USER="$HF_USER" HF_TOKEN="$HF_TOKEN" SPACE="$SPACE" "$VENV_DIR/bin/python" - <<'PY'
 import os
 from huggingface_hub import HfApi
 api = HfApi(token=os.environ["HF_TOKEN"])
