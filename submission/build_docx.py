@@ -25,7 +25,7 @@ TOPIC        = "Explainable Sports Category Classification Using CNN Transfer Le
 
 GITHUB   = "https://github.com/ATTezel/explainable-sports-classification"   # already live
 DATASET  = "https://www.kaggle.com/datasets/gpiosenka/sports-classification"
-NOTEBOOK = "[PASTE your Kaggle notebook link after you upload & Run All]"
+NOTEBOOK = "https://www.kaggle.com/code/ardatezel/explainable-sports-classification"
 OVERLEAF = "[PASTE your EDITABLE Overleaf link here — Share > Anyone can edit]"
 WEBAPP   = "[PASTE your Hugging Face Spaces link after you deploy app/]"
 VIDEO    = "[PASTE your YouTube/loom presentation link after you record it]"
@@ -111,7 +111,7 @@ items = [
      DATASET, "Ready"),
     ("2. Kaggle notebook",
      "End-to-end notebook: 3 CNN models, training, evaluation, Grad-CAM and SHAP, exporting all figures and metrics.",
-     NOTEBOOK, "Run & paste"),
+     NOTEBOOK, "Ready"),
     ("3. GitHub repository",
      "Public repository with the notebook, the front-end app code, the LaTeX report, figures, and README.",
      GITHUB, "Ready"),

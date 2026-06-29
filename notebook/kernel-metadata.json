@@ -1,6 +1,6 @@
 {
-  "id": "ardatezel/explainable-sports-cnn",
-  "title": "Explainable Sports CNN",
+  "id": "ardatezel/explainable-sports-classification",
+  "title": "Explainable Sports Classification",
   "code_file": "sports_cnn_explainable.ipynb",
   "language": "python",
   "kernel_type": "notebook",

@@ -72,7 +72,7 @@ Python · TensorFlow/Keras · scikit-learn · SHAP · Matplotlib · Gradio · Ka
 
 ## Project links
 - **GitHub repo:** https://github.com/ATTezel/explainable-sports-classification
-- **Kaggle notebook:** _add after running_
+- **Kaggle notebook:** https://www.kaggle.com/code/ardatezel/explainable-sports-classification
 - **Overleaf report:** _add share link_
 - **Live web app (HF Space):** _add after deploy_
 - **Presentation video:** _add link_

@@ -79,10 +79,27 @@ regardless of the exact mount name.
 """)
 
 code(r"""
-DATA_ROOT = None
-for d in sorted(glob.glob('/kaggle/input/*')):
-    if os.path.isdir(os.path.join(d, 'train')):
-        DATA_ROOT = d; break
+# Find the directory that holds a 'train' sub-folder, searching up to a few
+# levels deep so the notebook works whether the dataset mounts at
+# /kaggle/input/<slug>/ (web UI) or /kaggle/input/datasets/<owner>/<slug>/ (API attach).
+def _find_data_root(base='/kaggle/input', max_depth=5):
+    stack = [(base, 0)]
+    while stack:
+        d, depth = stack.pop()
+        try:
+            entries = os.listdir(d)
+        except OSError:
+            continue
+        if 'train' in entries and os.path.isdir(os.path.join(d, 'train')):
+            return d
+        if depth < max_depth:
+            for e in entries:
+                p = os.path.join(d, e)
+                if os.path.isdir(p):
+                    stack.append((p, depth + 1))
+    return None
+
+DATA_ROOT = _find_data_root()
 assert DATA_ROOT, 'No dataset with a train/ folder found under /kaggle/input. Use "Add Input" to attach the 100 Sports dataset.'
 
 TRAIN_DIR = os.path.join(DATA_ROOT, 'train')
