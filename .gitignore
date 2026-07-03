@@ -27,3 +27,8 @@ notebook/kaggle_output/
 
 # OS
 .DS_Store
+
+# Final Teams submission docs — these contain the EDITABLE Overleaf link.
+# Keep them out of the public repo so nobody can alter the graded report.
+submission/submission_links.docx
+submission/submission_overleaf_link.txt

@@ -26,9 +26,13 @@ TOPIC        = "Explainable Sports Category Classification Using CNN Transfer Le
 GITHUB   = "https://github.com/ATTezel/explainable-sports-classification"   # already live
 DATASET  = "https://www.kaggle.com/datasets/gpiosenka/sports-classification"
 NOTEBOOK = "https://www.kaggle.com/code/ardatezel/explainable-sports-classification"
-OVERLEAF = "[PASTE your EDITABLE Overleaf link here — Share > Anyone can edit]"
+# Editable Overleaf link comes from the OVERLEAF_LINK env var so it is NEVER hard-coded
+# into the repo — anyone with an editable link could alter the graded report before grading.
+OVERLEAF = os.environ.get(
+    "OVERLEAF_LINK",
+    "[set OVERLEAF_LINK env var to fill — kept out of the repo for security]")
 WEBAPP   = "https://huggingface.co/spaces/Tezo44/explainable-sports-classifier"   # live
-VIDEO    = "[PASTE your YouTube/loom presentation link after you record it]"
+VIDEO    = "https://youtu.be/vln6uNjm2t0"   # uploaded presentation video
 PROMPTLOG = "[OPTIONAL: PASTE your claude.ai shared-conversation link]"
 
 NAVY = RGBColor(0x21, 0x39, 0x52)
@@ -105,6 +109,12 @@ p = doc.add_paragraph(
 for r_ in p.runs:
     set_run(r_, 10.5)
 
+
+def _status(link, fallback="Pending"):
+    """Ready if the link is a real URL, else the fallback label."""
+    return "Ready" if str(link).startswith("http") else fallback
+
+
 items = [
     ("1. Dataset",
      "100 Sports Image Classification dataset (Kaggle, gpiosenka), used to train and evaluate the three CNN models.",
@@ -117,16 +127,16 @@ items = [
      GITHUB, "Ready"),
     ("4. Overleaf report (editable)",
      "Editable project report on Overleaf in the provided template, shared with edit access. This is the graded artifact.",
-     OVERLEAF, "Create & paste"),
+     OVERLEAF, _status(OVERLEAF, "Create & paste")),
     ("5. Frontend website",
      "Live, interactive web demo on Hugging Face Spaces (Gradio): upload an image and get the top-5 sports, confidence, and a Grad-CAM heatmap.",
-     WEBAPP, "Deploy & paste"),
+     WEBAPP, _status(WEBAPP, "Deploy & paste")),
     ("6. Presentation video",
      "Recorded walkthrough (max 10 min): ~2 min live demo of the web interface + ~8 min slides.",
-     VIDEO, "Record & paste"),
+     VIDEO, _status(VIDEO, "Record & paste")),
     ("7. Prompt log (optional)",
      "Shared conversation link documenting the prompts and process in one place.",
-     PROMPTLOG, "Optional"),
+     PROMPTLOG, _status(PROMPTLOG, "Optional")),
 ]
 tbl = doc.add_table(rows=1 + len(items), cols=3)
 tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
